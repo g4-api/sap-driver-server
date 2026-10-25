@@ -1,0 +1,65 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.FormScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation">
+    <!-- One control of every common dynpro type; the data is synthetic. -->
+    <StackPanel HorizontalAlignment="Left">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="140" />
+                <ColumnDefinition Width="220" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center" Text="Airline" sim:ScriptingTree.Id="lblSIM-CARRID" />
+            <TextBox Grid.Row="0" Grid.Column="1" Margin="0,4" MaxLength="3" Text="SIM" ToolTip="Airline code (F4 help)" sim:ScriptingTree.Id="ctxtSIM-CARRID" />
+
+            <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="Flight number" sim:ScriptingTree.Id="lblSIM-CONNID" />
+            <TextBox Grid.Row="1" Grid.Column="1" Margin="0,4" MaxLength="4" Text="0017" sim:ScriptingTree.Id="txtSIM-CONNID" />
+
+            <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Price" sim:ScriptingTree.Id="lblSIM-PRICE" />
+            <TextBox Grid.Row="2" Grid.Column="1" Margin="0,4" MaxLength="12" Text="422.94" sim:ScriptingTree.Id="txtSIM-PRICE" />
+
+            <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Currency" sim:ScriptingTree.Id="lblSIM-CURRENCY" />
+            <ComboBox Grid.Row="3" Grid.Column="1" Margin="0,4" SelectedIndex="0" sim:ScriptingTree.Id="cmbSIM-CURRENCY">
+                <ComboBoxItem Content="Euro" Tag="EUR" />
+                <ComboBoxItem Content="US Dollar" Tag="USD" />
+                <ComboBoxItem Content="Japanese Yen" Tag="JPY" />
+            </ComboBox>
+
+            <TextBlock Grid.Row="4" VerticalAlignment="Center" Text="Status" sim:ScriptingTree.Id="lblSIM-STATUS" />
+            <TextBox Grid.Row="4" Grid.Column="1" Margin="0,4" Background="#ECEFF3" IsReadOnly="True" Text="Planned" sim:ScriptingTree.Id="txtSIM-STATUS" />
+        </Grid>
+
+        <CheckBox Margin="0,8,0,0" Content="Active" IsChecked="True" sim:ScriptingTree.Id="chkSIM-ACTIVE" />
+
+        <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+            <RadioButton Margin="0,0,16,0" Content="Economy" GroupName="Class" IsChecked="True" sim:ScriptingTree.Id="radSIM-CLASS_Y" />
+            <RadioButton Margin="0,0,16,0" Content="Business" GroupName="Class" sim:ScriptingTree.Id="radSIM-CLASS_C" />
+            <RadioButton Content="First" GroupName="Class" sim:ScriptingTree.Id="radSIM-CLASS_F" />
+        </StackPanel>
+
+        <TabControl Width="420" Height="130" Margin="0,12,0,0" HorizontalAlignment="Left" sim:ScriptingTree.Id="tabsTABSTRIP">
+            <TabItem Header="Details" sim:ScriptingTree.Id="tabpDETAILS">
+                <StackPanel Margin="8" Orientation="Horizontal" sim:ScriptingTree.Id="ssubDETAILS:SAPMZSIM_FORM:0110">
+                    <TextBlock Width="132" VerticalAlignment="Center" Text="Plane type" sim:ScriptingTree.Id="lblSIM-PLANETYPE" />
+                    <TextBox Width="160" VerticalAlignment="Center" Text="A320" sim:ScriptingTree.Id="txtSIM-PLANETYPE" />
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Notes" sim:ScriptingTree.Id="tabpNOTES">
+                <StackPanel Margin="8" Orientation="Horizontal" sim:ScriptingTree.Id="ssubNOTES:SAPMZSIM_FORM:0120">
+                    <TextBlock Width="132" VerticalAlignment="Center" Text="Note" sim:ScriptingTree.Id="lblSIM-NOTE" />
+                    <TextBox Width="220" VerticalAlignment="Center" sim:ScriptingTree.Id="txtSIM-NOTE" />
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <Button Margin="0,12,0,0" Padding="12,3" HorizontalAlignment="Left" Content="Open popup" Click="OnOpenPopupClick" ToolTip="Opens a confirmation popup (wnd[1])" sim:ScriptingTree.Id="btnOPEN_POPUP" />
+    </StackPanel>
+</UserControl>

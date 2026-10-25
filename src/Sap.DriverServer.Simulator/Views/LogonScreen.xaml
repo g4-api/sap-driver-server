@@ -1,0 +1,34 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.LogonScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation">
+    <!-- The field identifiers follow SAP's logon screen (program SAPMSYST), so recorded logon scripts find them. -->
+    <Grid HorizontalAlignment="Left" VerticalAlignment="Top">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="140" />
+            <ColumnDefinition Width="220" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="32" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" VerticalAlignment="Center" Text="Client" sim:ScriptingTree.Id="lblRSYST-MANDT" />
+        <TextBox x:Name="ClientField" Grid.Row="0" Grid.Column="1" Margin="0,4" MaxLength="3" Text="001" sim:ScriptingTree.Id="txtRSYST-MANDT" />
+
+        <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="User" sim:ScriptingTree.Id="lblRSYST-BNAME" />
+        <TextBox x:Name="UserField" Grid.Row="1" Grid.Column="1" Margin="0,4" MaxLength="12" sim:ScriptingTree.Id="txtRSYST-BNAME" />
+
+        <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Password" sim:ScriptingTree.Id="lblRSYST-BCODE" />
+        <PasswordBox x:Name="PasswordField" Grid.Row="2" Grid.Column="1" Margin="0,4" MaxLength="40" sim:ScriptingTree.Id="pwdRSYST-BCODE" />
+
+        <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Language" sim:ScriptingTree.Id="lblRSYST-LANGU" />
+        <TextBox x:Name="LanguageField" Grid.Row="3" Grid.Column="1" Margin="0,4" MaxLength="2" Text="EN" sim:ScriptingTree.Id="txtRSYST-LANGU" />
+
+        <TextBlock Grid.Row="4" Grid.ColumnSpan="2" Margin="0,12,0,0" Foreground="#5A6470" TextWrapping="Wrap"
+                   Text="Test double: any user and password log on. The password is checked for presence only and is never stored." />
+    </Grid>
+</UserControl>

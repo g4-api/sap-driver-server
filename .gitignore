@@ -426,3 +426,10 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Project: local environment values (.env.example documents the keys; *.env above also matches)
+.env
+
+# Editor workspaces
+*.code-workspace
+*.sln.iml

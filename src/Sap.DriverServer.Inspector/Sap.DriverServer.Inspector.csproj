@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- Assembly -->
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<AssemblyVersion>10.0.0.0</AssemblyVersion>
+		<FileVersion>10.0.0.0</FileVersion>
+		<OutputType>WinExe</OutputType>
+		<UseWPF>true</UseWPF>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<ApplicationIcon>Assets\g4.ico</ApplicationIcon>
+		<IsPackable>false</IsPackable>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+		<LangVersion>latest</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+		<!-- https://learn.microsoft.com/en-us/dotnet/fundamentals/syslib-diagnostics/syslib1040-1049 -->
+		<NoWarn>$(NoWarn);SYSLIB1045;CA1873</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- G4 brand: the window icon, and IBM Plex Sans and Mono (SIL Open Font License, see Fonts\OFL.txt) embedded so the theme renders without installed fonts. -->
+		<Resource Include="Fonts\*.ttf" />
+		<Resource Include="Assets\g4.ico" />
+		<None Include="Fonts\OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Sap.DriverServer.Domain.UnitTests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Sap.DriverServer.Domain\Sap.DriverServer.Domain.csproj" />
+		<ProjectReference Include="..\Sap.DriverServer.Scripting\Sap.DriverServer.Scripting.csproj" />
+	</ItemGroup>
+
+</Project>

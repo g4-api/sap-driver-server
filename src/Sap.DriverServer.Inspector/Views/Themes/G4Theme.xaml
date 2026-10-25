@@ -1,0 +1,1086 @@
+<!--
+    G4 theme for the SAP GUI Inspector, "calm" variant.
+
+    Keeps the G4 Gateway identity (g4-litellm, src/styles/theme.parameters.css): near-black surfaces, the electric blue
+    accent, and IBM Plex type. For long inspection sessions it lowers glare: text is soft white instead of pure white,
+    surfaces are separated by shade instead of borders, borders remain only on inputs and dividers, and the accent marks
+    only the main action, focus, selection, and the active tab. Type is 14px with 32px controls on an 8px spacing grid.
+    Every template reads only the tokens below.
+-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:Sap.DriverServer.Inspector.Views">
+
+    <!-- ============================================================== Tokens: colors -->
+    <!-- Surfaces: window, panels, controls, hover. Near-black, slightly lifted from pure black to reduce halation. -->
+    <Color x:Key="G4BackgroundPrimaryColor">#FF0F0F11</Color>
+    <Color x:Key="G4BackgroundSecondaryColor">#FF151518</Color>
+    <Color x:Key="G4BackgroundTertiaryColor">#FF1C1C20</Color>
+    <Color x:Key="G4BackgroundHoverColor">#FF232328</Color>
+    <Color x:Key="G4BorderPrimaryColor">#FF26262B</Color>
+    <Color x:Key="G4BorderSecondaryColor">#FF34343A</Color>
+    <!-- Text: soft white (about 14:1 on the window), secondary (about 7:1, also used for hints), tertiary for disabled only. -->
+    <Color x:Key="G4TextPrimaryColor">#FFE4E4E7</Color>
+    <Color x:Key="G4TextSecondaryColor">#FFA1A1AA</Color>
+    <Color x:Key="G4TextTertiaryColor">#FF71717A</Color>
+    <Color x:Key="G4TextInverseColor">#FF0A0A0B</Color>
+    <!-- Accent: the G4 electric blue, used selectively. -->
+    <Color x:Key="G4AccentColor">#FF00D4FF</Color>
+    <Color x:Key="G4AccentHoverColor">#FF00E5FF</Color>
+    <Color x:Key="G4AccentActiveColor">#FF00B8E0</Color>
+    <Color x:Key="G4AccentSubtleColor">#2400D4FF</Color>
+    <Color x:Key="G4BrandEndColor">#FF0099CC</Color>
+    <Color x:Key="G4SuccessColor">#FF22C55E</Color>
+    <Color x:Key="G4WarningColor">#FFFACC15</Color>
+    <Color x:Key="G4ErrorColor">#FFEF4444</Color>
+
+    <!-- ============================================================== Tokens: brushes -->
+    <SolidColorBrush x:Key="G4BackgroundPrimaryBrush" Color="{StaticResource G4BackgroundPrimaryColor}" />
+    <SolidColorBrush x:Key="G4BackgroundSecondaryBrush" Color="{StaticResource G4BackgroundSecondaryColor}" />
+    <SolidColorBrush x:Key="G4BackgroundTertiaryBrush" Color="{StaticResource G4BackgroundTertiaryColor}" />
+    <SolidColorBrush x:Key="G4BackgroundHoverBrush" Color="{StaticResource G4BackgroundHoverColor}" />
+    <SolidColorBrush x:Key="G4BorderPrimaryBrush" Color="{StaticResource G4BorderPrimaryColor}" />
+    <SolidColorBrush x:Key="G4BorderSecondaryBrush" Color="{StaticResource G4BorderSecondaryColor}" />
+    <SolidColorBrush x:Key="G4TextPrimaryBrush" Color="{StaticResource G4TextPrimaryColor}" />
+    <SolidColorBrush x:Key="G4TextSecondaryBrush" Color="{StaticResource G4TextSecondaryColor}" />
+    <SolidColorBrush x:Key="G4TextTertiaryBrush" Color="{StaticResource G4TextTertiaryColor}" />
+    <SolidColorBrush x:Key="G4TextInverseBrush" Color="{StaticResource G4TextInverseColor}" />
+    <SolidColorBrush x:Key="G4AccentBrush" Color="{StaticResource G4AccentColor}" />
+    <SolidColorBrush x:Key="G4AccentHoverBrush" Color="{StaticResource G4AccentHoverColor}" />
+    <SolidColorBrush x:Key="G4AccentActiveBrush" Color="{StaticResource G4AccentActiveColor}" />
+    <SolidColorBrush x:Key="G4AccentSubtleBrush" Color="{StaticResource G4AccentSubtleColor}" />
+    <SolidColorBrush x:Key="G4SuccessBrush" Color="{StaticResource G4SuccessColor}" />
+    <SolidColorBrush x:Key="G4WarningBrush" Color="{StaticResource G4WarningColor}" />
+    <SolidColorBrush x:Key="G4ErrorBrush" Color="{StaticResource G4ErrorColor}" />
+
+    <!-- The brand mark gradient: electric blue to deep cyan at 135 degrees. -->
+    <LinearGradientBrush x:Key="G4BrandGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Offset="0" Color="{StaticResource G4AccentColor}" />
+        <GradientStop Offset="1" Color="{StaticResource G4BrandEndColor}" />
+    </LinearGradientBrush>
+
+    <!-- System colors used by stock chrome this theme does not template (scroll viewer corner, inactive selection). -->
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="{StaticResource G4BackgroundPrimaryColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="{StaticResource G4TextPrimaryColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}" Color="{StaticResource G4TextTertiaryColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{StaticResource G4AccentSubtleColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{StaticResource G4AccentColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{StaticResource G4AccentSubtleColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{StaticResource G4AccentColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="{StaticResource G4BackgroundSecondaryColor}" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="{StaticResource G4TextPrimaryColor}" />
+
+    <!-- ============================================================== Tokens: type, icons, and shape -->
+    <!-- Plex has no symbols such as arrows; Segoe UI Symbol supplies them. -->
+    <FontFamily x:Key="G4SansFont">pack://application:,,,/Sap.DriverServer.Inspector;component/Fonts/#IBM Plex Sans, Segoe UI Symbol</FontFamily>
+    <FontFamily x:Key="G4MonoFont">pack://application:,,,/Sap.DriverServer.Inspector;component/Fonts/#IBM Plex Mono</FontFamily>
+    <!-- Windows 11 icon font, with the Windows 10 icon font as fallback; both ship with Windows. -->
+    <FontFamily x:Key="G4IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    <CornerRadius x:Key="G4ControlRadius">6</CornerRadius>
+    <CornerRadius x:Key="G4PanelRadius">8</CornerRadius>
+    <CornerRadius x:Key="G4OptionRadius">4</CornerRadius>
+
+    <!-- Chevrons used by the combo box and the tree expander. -->
+    <Geometry x:Key="G4ChevronDownGeometry">M 0 0 L 4 4 L 8 0</Geometry>
+    <Geometry x:Key="G4ChevronRightGeometry">M 0 0 L 4 4 L 0 8</Geometry>
+
+    <!-- ============================================================== Window -->
+    <!-- Applied explicitly by each window, because implicit styles skip Window subclasses. -->
+    <Style x:Key="G4WindowStyle" TargetType="Window">
+        <Setter Property="Background" Value="{StaticResource G4BackgroundPrimaryBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource G4SansFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+
+    <!-- Keyboard focus: a 2px electric blue ring around the control, like the web focus-visible ring. -->
+    <Style x:Key="G4FocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Rectangle Margin="-3" RadiusX="8" RadiusY="8" SnapsToDevicePixels="True" Stroke="{StaticResource G4AccentBrush}" StrokeThickness="2" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Text styles -->
+    <!-- Title of the selected element in the details pane. -->
+    <Style x:Key="G4TitleText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- Heading of a group inside a panel or tab. -->
+    <Style x:Key="G4SectionHeader" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <!-- Label of an input or toggle. -->
+    <Style x:Key="G4LabelText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+    </Style>
+
+    <!-- One-line explanation under a label; secondary text keeps it readable at 12px. -->
+    <Style x:Key="G4HintText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+        <Setter Property="LineHeight" Value="17" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="G4MutedText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- An icon glyph from the Windows icon font. -->
+    <Style x:Key="G4Icon" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource G4IconFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ============================================================== Surfaces -->
+    <!-- A raised group inside a pane; separated by shade, not by a border. -->
+    <Style x:Key="G4Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource G4BackgroundSecondaryBrush}" />
+        <Setter Property="CornerRadius" Value="{StaticResource G4PanelRadius}" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <!-- A one-pixel horizontal divider between groups. -->
+    <Style x:Key="G4Divider" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource G4BorderPrimaryBrush}" />
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="0,16" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- ============================================================== Form field -->
+    <!-- Label, one-line hint, then the input; the hint is hidden when empty. -->
+    <Style TargetType="views:FormField">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="views:FormField">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource G4LabelText}" Text="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" />
+                        <TextBlock x:Name="HintText" Margin="0,2,0,8" Style="{StaticResource G4HintText}" Text="{TemplateBinding Hint}" />
+                        <ContentPresenter />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Hint" Value="">
+                            <Setter TargetName="HintText" Property="Visibility" Value="Collapsed" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Buttons -->
+    <!-- Secondary button: a quiet raised surface; the default for every button. -->
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource G4BackgroundTertiaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource G4BorderPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource G4FocusVisual}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource G4ControlRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          RecognizesAccessKey="True"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4BackgroundHoverBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4BorderSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4AccentActiveBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Primary button: electric blue fill with near-black text; one per panel or dialog. -->
+    <Style x:Key="G4PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{StaticResource G4AccentBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextInverseBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource G4ControlRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          RecognizesAccessKey="True"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4AccentHoverBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4AccentHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4AccentActiveBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4AccentActiveBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Ghost button: no surface until hovered; for secondary actions that sit inside content, such as Copy. -->
+    <Style x:Key="G4GhostButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+        <Setter Property="Padding" Value="10,0" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Icon button: a square ghost button showing one icon glyph; the tool tip names the action. -->
+    <Style x:Key="G4IconButton" TargetType="Button" BasedOn="{StaticResource G4GhostButton}">
+        <Setter Property="FontFamily" Value="{StaticResource G4IconFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
+        <Setter Property="Width" Value="32" />
+    </Style>
+
+    <!-- Toggle button: a secondary button that turns electric blue while checked, such as Resume. -->
+    <Style TargetType="ToggleButton">
+        <Setter Property="Background" Value="{StaticResource G4BackgroundTertiaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource G4BorderPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource G4FocusVisual}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource G4ControlRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          RecognizesAccessKey="True"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4BackgroundHoverBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4BorderSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4AccentSubtleBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Text input -->
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource G4BackgroundTertiaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource G4BorderPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CaretBrush" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="MinHeight" Value="32" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="SelectionBrush" Value="{StaticResource G4AccentBrush}" />
+        <Setter Property="SelectionOpacity" Value="0.35" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Chrome"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{StaticResource G4ControlRadius}">
+                        <!-- The text box applies its padding inside the content host itself, so the host takes no margin. -->
+                        <ScrollViewer x:Name="PART_ContentHost"
+                                      Focusable="False"
+                                      HorizontalScrollBarVisibility="{TemplateBinding HorizontalScrollBarVisibility}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      VerticalScrollBarVisibility="{TemplateBinding VerticalScrollBarVisibility}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4BorderSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Read-only value shown as selectable text, such as an identifier or a generated locator. -->
+    <Style x:Key="G4ValueText" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontFamily" Value="{StaticResource G4MonoFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- ============================================================== Check box and switch -->
+    <Style TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource G4FocusVisual}" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="Box"
+                                Width="16"
+                                Height="16"
+                                Background="{StaticResource G4BackgroundTertiaryBrush}"
+                                BorderBrush="{StaticResource G4BorderSecondaryBrush}"
+                                BorderThickness="1"
+                                CornerRadius="{StaticResource G4OptionRadius}"
+                                VerticalAlignment="Top"
+                                Margin="0,2,0,0">
+                            <Path x:Name="Check"
+                                  Data="M 3 8 L 6.5 11.5 L 13 4.5"
+                                  Margin="-1"
+                                  Stroke="{StaticResource G4TextInverseBrush}"
+                                  StrokeEndLineCap="Round"
+                                  StrokeStartLineCap="Round"
+                                  StrokeThickness="2"
+                                  Visibility="Collapsed" />
+                        </Border>
+                        <ContentPresenter Grid.Column="1" Margin="10,0,0,0" RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Box" Property="Background" Value="{StaticResource G4AccentBrush}" />
+                            <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+                            <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Switch: an on/off toggle for settings; the content holds the label and its hint. -->
+    <Style x:Key="G4Switch" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="Track"
+                                Width="36"
+                                Height="20"
+                                Margin="0,1,0,0"
+                                Background="{StaticResource G4BackgroundTertiaryBrush}"
+                                BorderBrush="{StaticResource G4BorderSecondaryBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10"
+                                VerticalAlignment="Top">
+                            <Ellipse x:Name="Knob" Width="12" Height="12" Margin="3,0" Fill="{StaticResource G4TextSecondaryBrush}" HorizontalAlignment="Left" />
+                        </Border>
+                        <ContentPresenter Grid.Column="1" Margin="12,0,0,0" RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource G4TextTertiaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource G4AccentBrush}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+                            <Setter TargetName="Knob" Property="Fill" Value="{StaticResource G4TextInverseBrush}" />
+                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                            <Setter Property="Cursor" Value="Arrow" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Combo box -->
+    <Style x:Key="G4ComboBoxToggle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome"
+                            Background="{StaticResource G4BackgroundTertiaryBrush}"
+                            BorderBrush="{StaticResource G4BorderPrimaryBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource G4ControlRadius}">
+                        <Path x:Name="Chevron"
+                              Data="{StaticResource G4ChevronDownGeometry}"
+                              HorizontalAlignment="Right"
+                              Margin="0,0,12,0"
+                              Stroke="{StaticResource G4TextSecondaryBrush}"
+                              StrokeEndLineCap="Round"
+                              StrokeStartLineCap="Round"
+                              StrokeThickness="1.5"
+                              VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4BorderSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+                            <Setter TargetName="Chevron" Property="Stroke" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ComboBox">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource G4FocusVisual}" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="Padding" Value="10,0,32,0" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Style="{StaticResource G4ComboBoxToggle}" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                          HorizontalAlignment="Left"
+                                          IsHitTestVisible="False"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                            <ContentPresenter.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+                        <Popup x:Name="PART_Popup"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               IsOpen="{TemplateBinding IsDropDownOpen}"
+                               Placement="Bottom"
+                               PopupAnimation="Fade"
+                               VerticalOffset="4">
+                            <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                    Background="{StaticResource G4BackgroundSecondaryBrush}"
+                                    BorderBrush="{StaticResource G4BorderSecondaryBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{StaticResource G4ControlRadius}"
+                                    Padding="4">
+                                <ScrollViewer SnapsToDevicePixels="True">
+                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ComboBoxItem">
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="Chrome" Background="Transparent" CornerRadius="{StaticResource G4OptionRadius}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4BackgroundHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4AccentSubtleBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource G4TextTertiaryBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Tabs -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <DockPanel>
+                        <Border DockPanel.Dock="Top" BorderBrush="{StaticResource G4BorderPrimaryBrush}" BorderThickness="0,0,0,1">
+                            <TabPanel IsItemsHost="True" />
+                        </Border>
+                        <ContentPresenter x:Name="PART_SelectedContentHost" Margin="{TemplateBinding Padding}" ContentSource="SelectedContent" />
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- A tab: secondary text, primary on hover, and an electric blue underline when selected. -->
+    <Style TargetType="TabItem">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource G4FocusVisual}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Grid Margin="0,0,24,0" Background="Transparent">
+                        <ContentPresenter Margin="0,8,0,10" ContentSource="Header" RecognizesAccessKey="True" />
+                        <Border x:Name="Underline" Height="2" Background="Transparent" CornerRadius="1" VerticalAlignment="Bottom" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+                            <Setter TargetName="Underline" Property="Background" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource G4TextTertiaryBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Status bar -->
+    <Style TargetType="StatusBar">
+        <Setter Property="Background" Value="{StaticResource G4BackgroundSecondaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource G4BorderPrimaryBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+        <Setter Property="Padding" Value="12,4" />
+    </Style>
+
+    <!-- ============================================================== Tree view -->
+    <Style x:Key="G4TreeExpander" TargetType="ToggleButton">
+        <Setter Property="AutomationProperties.Name" Value="Expand or collapse" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border Width="20" Height="20" Background="Transparent">
+                        <Path x:Name="Chevron"
+                              Data="{StaticResource G4ChevronRightGeometry}"
+                              HorizontalAlignment="Center"
+                              RenderTransformOrigin="0.5,0.5"
+                              Stroke="{StaticResource G4TextTertiaryBrush}"
+                              StrokeEndLineCap="Round"
+                              StrokeStartLineCap="Round"
+                              StrokeThickness="1.5"
+                              VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chevron" Property="Stroke" Value="{StaticResource G4TextPrimaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chevron" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="90" />
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="TreeView">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+    </Style>
+
+    <!-- A tree row: rounded hover and selection; the selection adds an electric blue bar on the left. -->
+    <Style TargetType="TreeViewItem">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Padding" Value="4,5" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TreeViewItem">
+                    <StackPanel>
+                        <Border x:Name="Row" Background="Transparent" CornerRadius="{StaticResource G4OptionRadius}">
+                            <Grid>
+                                <Border x:Name="Marker" Width="2" Margin="0,6" Background="Transparent" CornerRadius="1" HorizontalAlignment="Left" />
+                                <DockPanel Margin="4,0,8,0">
+                                    <ToggleButton x:Name="Expander"
+                                                  ClickMode="Press"
+                                                  DockPanel.Dock="Left"
+                                                  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  Style="{StaticResource G4TreeExpander}" />
+                                    <ContentPresenter x:Name="PART_Header" Margin="{TemplateBinding Padding}" ContentSource="Header" />
+                                </DockPanel>
+                            </Grid>
+                        </Border>
+                        <ItemsPresenter x:Name="ItemsHost" Margin="16,0,0,0" Visibility="Collapsed" />
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsExpanded" Value="True">
+                            <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="HasItems" Value="False">
+                            <Setter TargetName="Expander" Property="Visibility" Value="Hidden" />
+                        </Trigger>
+                        <Trigger SourceName="Row" Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Row" Property="Background" Value="{StaticResource G4BackgroundHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Row" Property="Background" Value="{StaticResource G4AccentSubtleBrush}" />
+                            <Setter TargetName="Marker" Property="Background" Value="{StaticResource G4AccentBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Data grid -->
+    <!-- A borderless grid without grid lines; rows are separated by spacing and the hover shade. -->
+    <Style TargetType="DataGrid">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="GridLinesVisibility" Value="None" />
+        <Setter Property="RowBackground" Value="Transparent" />
+        <Setter Property="AlternatingRowBackground" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGrid">
+                    <Border Background="{TemplateBinding Background}">
+                        <ScrollViewer x:Name="DG_ScrollViewer" Focusable="False">
+                            <ScrollViewer.Template>
+                                <ControlTemplate TargetType="ScrollViewer">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <DataGridColumnHeadersPresenter x:Name="PART_ColumnHeadersPresenter"
+                                                                        Grid.ColumnSpan="2"
+                                                                        Visibility="{Binding HeadersVisibility, ConverterParameter={x:Static DataGridHeadersVisibility.Column}, Converter={x:Static DataGrid.HeadersVisibilityConverter}, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
+                                        <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" Grid.Row="1" CanContentScroll="{TemplateBinding CanContentScroll}" />
+                                        <ScrollBar x:Name="PART_VerticalScrollBar"
+                                                   Grid.Row="1"
+                                                   Grid.Column="1"
+                                                   Maximum="{TemplateBinding ScrollableHeight}"
+                                                   Orientation="Vertical"
+                                                   Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                   ViewportSize="{TemplateBinding ViewportHeight}"
+                                                   Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" />
+                                        <ScrollBar x:Name="PART_HorizontalScrollBar"
+                                                   Grid.Row="2"
+                                                   Maximum="{TemplateBinding ScrollableWidth}"
+                                                   Orientation="Horizontal"
+                                                   Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                   ViewportSize="{TemplateBinding ViewportWidth}"
+                                                   Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
+                                    </Grid>
+                                </ControlTemplate>
+                            </ScrollViewer.Template>
+                            <ItemsPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </ScrollViewer>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeader">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{StaticResource G4BorderPrimaryBrush}" BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <!-- Resize grip on the right edge, visible only while hovered; columns stay resizable. -->
+                        <Thumb x:Name="PART_RightHeaderGripper" Width="8" Cursor="SizeWE" HorizontalAlignment="Right">
+                            <Thumb.Template>
+                                <ControlTemplate TargetType="Thumb">
+                                    <Border Background="Transparent">
+                                        <Rectangle x:Name="Grip" Width="1" Margin="0,8" Fill="Transparent" HorizontalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Grip" Property="Fill" Value="{StaticResource G4BorderSecondaryBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Thumb.Template>
+                        </Thumb>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="DataGridRow">
+        <Setter Property="Background" Value="Transparent" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource G4BackgroundHoverBrush}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource G4AccentSubtleBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="DataGridCell">
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Padding" Value="12,7" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border Background="Transparent" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Foreground" Value="{StaticResource G4AccentBrush}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ============================================================== Scroll bar -->
+    <Style x:Key="G4ScrollPageButton" TargetType="RepeatButton">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RepeatButton">
+                    <Border Background="Transparent" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="G4ScrollThumb" TargetType="Thumb">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border x:Name="Grip" Margin="2" Background="{StaticResource G4BorderSecondaryBrush}" CornerRadius="3" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{StaticResource G4TextTertiaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Grip" Property="Background" Value="{StaticResource G4TextSecondaryBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Width" Value="10" />
+        <Setter Property="MinWidth" Value="10" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Track x:Name="PART_Track" IsDirectionReversed="True">
+                        <Track.DecreaseRepeatButton>
+                            <RepeatButton Command="ScrollBar.PageUpCommand" Style="{StaticResource G4ScrollPageButton}" />
+                        </Track.DecreaseRepeatButton>
+                        <Track.Thumb>
+                            <Thumb Style="{StaticResource G4ScrollThumb}" />
+                        </Track.Thumb>
+                        <Track.IncreaseRepeatButton>
+                            <RepeatButton Command="ScrollBar.PageDownCommand" Style="{StaticResource G4ScrollPageButton}" />
+                        </Track.IncreaseRepeatButton>
+                    </Track>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Height" Value="10" />
+                <Setter Property="MinHeight" Value="10" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Track x:Name="PART_Track" IsDirectionReversed="False">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageLeftCommand" Style="{StaticResource G4ScrollPageButton}" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource G4ScrollThumb}" />
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageRightCommand" Style="{StaticResource G4ScrollPageButton}" />
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ============================================================== Splitter, tool tip, and context menu -->
+    <!-- A wide, invisible grip around a one-pixel line that lights up while hovered or dragged. -->
+    <Style TargetType="GridSplitter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GridSplitter">
+                    <Border Background="Transparent">
+                        <Rectangle x:Name="Line" Width="1" Fill="{StaticResource G4BorderPrimaryBrush}" HorizontalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Line" Property="Fill" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="Line" Property="Fill" Value="{StaticResource G4AccentBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Tool tips and context menus open in their own window, so they set the font instead of inheriting it. -->
+    <Style TargetType="ToolTip">
+        <Setter Property="FontFamily" Value="{StaticResource G4SansFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border MaxWidth="420"
+                            Background="{StaticResource G4BackgroundTertiaryBrush}"
+                            BorderBrush="{StaticResource G4BorderSecondaryBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource G4ControlRadius}"
+                            Padding="10,6">
+                        <ContentPresenter>
+                            <ContentPresenter.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                </Style>
+                            </ContentPresenter.Resources>
+                        </ContentPresenter>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ContextMenu">
+        <Setter Property="FontFamily" Value="{StaticResource G4SansFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border MinWidth="160"
+                            Background="{StaticResource G4BackgroundSecondaryBrush}"
+                            BorderBrush="{StaticResource G4BorderSecondaryBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource G4ControlRadius}"
+                            Padding="4">
+                        <ItemsPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource G4TextPrimaryBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Chrome" Background="Transparent" CornerRadius="{StaticResource G4OptionRadius}" Padding="10,6">
+                        <DockPanel>
+                            <TextBlock Margin="24,0,0,0" DockPanel.Dock="Right" Foreground="{StaticResource G4TextSecondaryBrush}" Text="{TemplateBinding InputGestureText}" />
+                            <ContentPresenter ContentSource="Header" RecognizesAccessKey="True" />
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource G4BackgroundHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" Value="{StaticResource G4TextTertiaryBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================== Brand -->
+    <!-- The G4 mark: a rounded square in the brand gradient with "G4" in near-black, as in the G4 Gateway header. -->
+    <Style x:Key="G4BrandMark" TargetType="ContentControl">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Width" Value="28" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border Background="{StaticResource G4BrandGradientBrush}" CornerRadius="{StaticResource G4ControlRadius}">
+                        <TextBlock FontSize="13"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource G4TextInverseBrush}"
+                                   HorizontalAlignment="Center"
+                                   Text="G4"
+                                   VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

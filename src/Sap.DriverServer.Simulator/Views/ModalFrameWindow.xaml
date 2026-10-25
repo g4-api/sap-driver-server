@@ -1,0 +1,24 @@
+<views:FrameWindow x:Class="Sap.DriverServer.Simulator.Views.ModalFrameWindow"
+                   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation"
+                   xmlns:views="clr-namespace:Sap.DriverServer.Simulator.Views"
+                   Title="Confirmation - SAP GUI Simulator (test double)"
+                   ResizeMode="NoResize"
+                   ShowInTaskbar="False"
+                   SizeToContent="WidthAndHeight"
+                   WindowStartupLocation="CenterOwner"
+                   PreviewKeyDown="OnPreviewKeyDown">
+    <!-- The root grid is the scripting geometry of wnd[1]; the canvas above it holds Visualize frames. -->
+    <Grid x:Name="RootGrid" Background="White">
+        <StackPanel Margin="16" sim:ScriptingTree.Id="usr">
+            <TextBox Width="340" BorderThickness="0" IsReadOnly="True" Text="Do you want to continue?" sim:ScriptingTree.Id="txtSPOP-TEXTLINE1" />
+            <StackPanel Margin="0,16,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button Width="80" Margin="0,0,8,0" Content="Yes" Click="OnYesClick" sim:ScriptingTree.Id="btnSPOP-OPTION1" />
+                <Button Width="80" Content="No" Click="OnNoClick" sim:ScriptingTree.Id="btnSPOP-OPTION2" />
+            </StackPanel>
+        </StackPanel>
+
+        <Canvas x:Name="Highlights" IsHitTestVisible="False" />
+    </Grid>
+</views:FrameWindow>

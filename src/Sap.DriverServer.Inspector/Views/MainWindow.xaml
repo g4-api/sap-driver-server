@@ -1,0 +1,546 @@
+<Window x:Class="Sap.DriverServer.Inspector.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Sap.DriverServer.Inspector.ViewModels"
+        xmlns:services="clr-namespace:Sap.DriverServer.Inspector.Services"
+        xmlns:views="clr-namespace:Sap.DriverServer.Inspector.Views"
+        Title="G4 SAP GUI Inspector"
+        Width="1360"
+        Height="820"
+        MinWidth="1040"
+        MinHeight="640"
+        Icon="/Sap.DriverServer.Inspector;component/Assets/g4.ico"
+        Style="{StaticResource G4WindowStyle}">
+
+    <Window.InputBindings>
+        <KeyBinding Command="{Binding TogglePauseCommand}" Gesture="Shift+F5" />
+        <KeyBinding Command="{Binding NavigateCommand}" CommandParameter="{x:Static services:InspectorNavigation.PreviousSibling}" Gesture="Ctrl+Shift+F5" />
+        <KeyBinding Command="{Binding NavigateCommand}" CommandParameter="{x:Static services:InspectorNavigation.Parent}" Gesture="Ctrl+Shift+F6" />
+        <KeyBinding Command="{Binding NavigateCommand}" CommandParameter="{x:Static services:InspectorNavigation.FirstChild}" Gesture="Ctrl+Shift+F7" />
+        <KeyBinding Command="{Binding NavigateCommand}" CommandParameter="{x:Static services:InspectorNavigation.NextSibling}" Gesture="Ctrl+Shift+F8" />
+        <KeyBinding Command="{Binding NavigateCommand}" CommandParameter="{x:Static services:InspectorNavigation.LastChild}" Gesture="Ctrl+Shift+F9" />
+    </Window.InputBindings>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
+        <views:CollapsedWhenTrueConverter x:Key="CollapsedWhenTrue" />
+
+        <!-- Every tab scrolls on its own and keeps the same inner spacing. -->
+        <Style x:Key="TabScroller" TargetType="ScrollViewer">
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="Padding" Value="0,20,8,20" />
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+        <!-- ======================================================== App bar: brand and live inspection -->
+        <Border DockPanel.Dock="Top"
+                Background="{StaticResource G4BackgroundSecondaryBrush}"
+                BorderBrush="{StaticResource G4BorderPrimaryBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="20,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ContentControl Style="{StaticResource G4BrandMark}" />
+                    <TextBlock Margin="12,0,0,0" FontSize="16" FontWeight="SemiBold" Text="SAP GUI Inspector" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <CheckBox AutomationProperties.Name="Highlighter" IsChecked="{Binding IsHighlighterEnabled}" Margin="0,0,32,0" Style="{StaticResource G4Switch}" VerticalAlignment="Center">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource G4LabelText}" Text="Highlighter" />
+                            <TextBlock Style="{StaticResource G4HintText}" Text="Frames the inspected control." />
+                        </StackPanel>
+                    </CheckBox>
+                    <CheckBox AutomationProperties.Name="Follow focus"
+                              IsChecked="{Binding IsFollowFocus}"
+                              IsEnabled="{Binding Features.CanFollowFocus}"
+                              Margin="0,0,32,0"
+                              Style="{StaticResource G4Switch}"
+                              ToolTip="Available in local mode."
+                              VerticalAlignment="Center">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource G4LabelText}" Text="Follow focus" />
+                            <TextBlock Style="{StaticResource G4HintText}" Text="Selects the focused SAP control." />
+                        </StackPanel>
+                    </CheckBox>
+                    <ToggleButton x:Name="PauseButton"
+                                  AutomationProperties.Name="Pause or resume live inspection"
+                                  Command="{Binding TogglePauseCommand}"
+                                  IsChecked="{Binding IsPaused, Mode=OneWay}"
+                                  MinWidth="150"
+                                  ToolTip="Pause or resume live inspection. The shortcut works system-wide, also while SAP GUI has focus.">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontSize="12">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource G4Icon}">
+                                        <Setter Property="Text" Value="&#xE769;" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                                <Setter Property="Text" Value="&#xE768;" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Pause" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                                <Setter Property="Text" Value="Resume" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Margin="10,0,0,0" FontSize="12" FontWeight="Normal" Opacity="0.7" Text="Shift+F5" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </ToggleButton>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ======================================================== Status line -->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="300" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition>
+                    <ColumnDefinition.Style>
+                        <Style TargetType="ColumnDefinition">
+                            <Setter Property="Width" Value="0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Features.HasScreenCanvas}" Value="True">
+                                    <Setter Property="Width" Value="3*" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ColumnDefinition.Style>
+                </ColumnDefinition>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="3*" MinWidth="440" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ==================================================== Inspect pane: source and tree -->
+            <DockPanel Grid.Column="0" Background="{StaticResource G4BackgroundSecondaryBrush}">
+                <StackPanel DockPanel.Dock="Top" Margin="20,20,20,0">
+                    <views:FormField Header="Source" Hint="Where the tree comes from: this PC over COM, or a driver session.">
+                        <ComboBox DisplayMemberPath="DisplayName" ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}" />
+                    </views:FormField>
+                    <DockPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Button AutomationProperties.Name="Create session" Click="OnCreateSessionClick" Style="{StaticResource G4PrimaryButton}" ToolTip="Connect to a SAP driver server, like Appium Inspector">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock FontSize="12" Style="{StaticResource G4Icon}" Text="&#xE710;" />
+                                    <TextBlock Margin="8,0,0,0" Text="Create session" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Margin="8,0,0,0"
+                                    Command="{Binding DisconnectCommand}"
+                                    Content="Disconnect"
+                                    ToolTip="Leave the driver session; sessions the inspector created are deleted" />
+                        </StackPanel>
+                    </DockPanel>
+                    <Border Style="{StaticResource G4Divider}" Margin="0,20,0,12" />
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button AutomationProperties.Name="Refresh tree"
+                                    Command="{Binding RefreshCommand}"
+                                    Content="&#xE72C;"
+                                    Margin="0,0,8,0"
+                                    Style="{StaticResource G4IconButton}"
+                                    ToolTip="Reload the tree from the selected source" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Parent" CommandParameter="{x:Static services:InspectorNavigation.Parent}" Content="&#xE74A;" Style="{StaticResource G4IconButton}" ToolTip="Parent (Ctrl+Shift+F6)" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="First child" CommandParameter="{x:Static services:InspectorNavigation.FirstChild}" Content="&#xE74B;" Style="{StaticResource G4IconButton}" ToolTip="First child (Ctrl+Shift+F7); last child: Ctrl+Shift+F9" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Previous sibling" CommandParameter="{x:Static services:InspectorNavigation.PreviousSibling}" Content="&#xE72B;" Style="{StaticResource G4IconButton}" ToolTip="Previous sibling (Ctrl+Shift+F5)" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Next sibling" CommandParameter="{x:Static services:InspectorNavigation.NextSibling}" Content="&#xE72A;" Style="{StaticResource G4IconButton}" ToolTip="Next sibling (Ctrl+Shift+F8)" />
+                        </StackPanel>
+                        <TextBlock Margin="0" Style="{StaticResource G4SectionHeader}" Text="Tree" VerticalAlignment="Center" />
+                    </DockPanel>
+                </StackPanel>
+
+                <Grid Margin="12,8,12,12">
+                    <!-- Hint shown over an empty tree: waiting for SAP GUI, or a driver session that failed to load. -->
+                    <TextBlock Margin="16"
+                               HorizontalAlignment="Center"
+                               LineHeight="22"
+                               Panel.ZIndex="1"
+                               Text="{Binding TreeHint}"
+                               TextAlignment="Center"
+                               VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource G4MutedText}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding RootNodes.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!-- Live tree: application, connections, sessions, windows, and controls, loaded on demand. -->
+                    <TreeView x:Name="LiveTree" ItemsSource="{Binding RootNodes}">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                                <EventSetter Event="Selected" Handler="OnTreeItemSelected" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate DataType="{x:Type vm:TreeNodeViewModel}" ItemsSource="{Binding Children}">
+                                <TextBlock Text="{Binding Display}" ToolTip="{Binding Id}" />
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </Grid>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+
+            <!-- ==================================================== Screen canvas of driver sessions -->
+            <!-- Hover resolves controls unless paused; clicking selects and pauses. -->
+            <DockPanel Grid.Column="2" Margin="20" Visibility="{Binding Features.HasScreenCanvas, Converter={StaticResource VisibleWhenTrue}}">
+                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                    <Button AutomationProperties.Name="Screenshot" Command="{Binding RefreshScreenCommand}" DockPanel.Dock="Right" ToolTip="Capture the session's current window again">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontSize="12" Style="{StaticResource G4Icon}" Text="&#xE72C;" />
+                            <TextBlock Margin="8,0,0,0" Text="Screenshot" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource G4SectionHeader}" Text="Screen" />
+                        <TextBlock Style="{StaticResource G4HintText}" Text="{Binding Screen.Caption}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+                    </StackPanel>
+                </DockPanel>
+                <Border Padding="8" Style="{StaticResource G4Card}" VerticalAlignment="Top">
+                    <Viewbox Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top">
+                        <Grid x:Name="ScreenSurface"
+                              Width="{Binding Screen.ImageWidth}"
+                              Height="{Binding Screen.ImageHeight}"
+                              Background="Transparent"
+                              Cursor="Cross"
+                              MouseLeftButtonUp="OnScreenMouseLeftButtonUp"
+                              MouseMove="OnScreenMouseMove">
+                            <Image Source="{Binding Screen.Image}" Stretch="Fill" />
+                            <ItemsControl IsHitTestVisible="False" ItemsSource="{Binding Screen.Highlights}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemContainerStyle>
+                                    <Style TargetType="ContentPresenter">
+                                        <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                    </Style>
+                                </ItemsControl.ItemContainerStyle>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type vm:CanvasHighlight}">
+                                        <Border x:Name="Frame" Width="{Binding Width}" Height="{Binding Height}" BorderBrush="{StaticResource G4AccentBrush}" BorderThickness="2">
+                                            <TextBlock x:Name="Tag"
+                                                       Background="{StaticResource G4AccentBrush}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource G4TextInverseBrush}"
+                                                       HorizontalAlignment="Left"
+                                                       Padding="4,1"
+                                                       Text="{Binding Label}"
+                                                       VerticalAlignment="Top" />
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding IsMatch}" Value="True">
+                                                <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource G4WarningBrush}" />
+                                                <Setter TargetName="Tag" Property="Background" Value="{StaticResource G4WarningBrush}" />
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Viewbox>
+                </Border>
+            </DockPanel>
+
+            <GridSplitter Grid.Column="3"
+                          Width="5"
+                          HorizontalAlignment="Stretch"
+                          Visibility="{Binding Features.HasScreenCanvas, Converter={StaticResource VisibleWhenTrue}}" />
+
+            <!-- ==================================================== Details pane: header and tabs -->
+            <DockPanel Grid.Column="4" Margin="28,24,20,0">
+                <!-- Header: the element type and name, and its full scripting id. -->
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,8,16">
+                    <TextBlock Style="{StaticResource G4TitleText}" Text="{Binding Header}" />
+                    <DockPanel Margin="0,8,0,0">
+                        <Button AutomationProperties.Name="Copy id"
+                                Command="{Binding CopyCommand}"
+                                CommandParameter="{Binding SelectedId}"
+                                DockPanel.Dock="Right"
+                                Margin="12,0,0,0"
+                                Style="{StaticResource G4GhostButton}"
+                                ToolTip="Copy the full scripting id"
+                                VerticalAlignment="Top">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource G4Icon}" Text="&#xE8C8;" />
+                                <TextBlock Margin="8,0,0,0" Text="Copy id" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <TextBox AutomationProperties.Name="Scripting id" Style="{StaticResource G4ValueText}" Text="{Binding SelectedId, Mode=OneWay}" VerticalAlignment="Center" />
+                    </DockPanel>
+                </StackPanel>
+
+                <TabControl>
+                    <!-- Tab: Properties -->
+                    <TabItem Header="Properties">
+                        <DockPanel Margin="0,20,8,0">
+                            <StackPanel DockPanel.Dock="Top">
+                                <views:FormField Header="Filter" Hint="Matches property names and values.">
+                                    <TextBox Text="{Binding PropertyFilter, UpdateSourceTrigger=PropertyChanged}" />
+                                </views:FormField>
+                                <CheckBox Margin="0,0,0,16" AutomationProperties.Name="Show all" IsChecked="{Binding ShowAllProperties}" Style="{StaticResource G4Switch}">
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource G4LabelText}" Text="Show all" />
+                                        <TextBlock Style="{StaticResource G4HintText}" Text="Every scripting property, not only the basic set." />
+                                    </StackPanel>
+                                </CheckBox>
+                            </StackPanel>
+                            <DataGrid AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      ClipboardCopyMode="ExcludeHeader"
+                                      HeadersVisibility="Column"
+                                      IsReadOnly="True"
+                                      ItemsSource="{Binding PropertiesView}"
+                                      Margin="0,0,0,12"
+                                      SelectionUnit="FullRow">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Binding="{Binding Name}" Header="Name" Width="180">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource G4TextSecondaryBrush}" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Binding="{Binding Value}" Header="Value" Width="*">
+                                        <DataGridTextColumn.ElementStyle>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+                                            </Style>
+                                        </DataGridTextColumn.ElementStyle>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </TabItem>
+
+                    <!-- Tab: Locators -->
+                    <TabItem Header="Locators">
+                        <ScrollViewer Style="{StaticResource TabScroller}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource G4SectionHeader}" Text="Generated locators" />
+                                <TextBlock Margin="0,0,0,12" Style="{StaticResource G4HintText}" Text="{Binding LocatorHint}" />
+                                <ItemsControl ItemsSource="{Binding Locators}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,0,0,8" Style="{StaticResource G4Card}" Padding="14,10">
+                                                <DockPanel>
+                                                    <Button AutomationProperties.Name="Copy locator"
+                                                            Command="{Binding DataContext.CopyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                            CommandParameter="{Binding Value}"
+                                                            Content="&#xE8C8;"
+                                                            DockPanel.Dock="Right"
+                                                            Margin="8,0,0,0"
+                                                            Style="{StaticResource G4IconButton}"
+                                                            ToolTip="Copy the locator" />
+                                                    <StackPanel>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource G4TextSecondaryBrush}" Text="{Binding Strategy}" />
+                                                            <StackPanel Margin="12,0,0,0" Orientation="Horizontal">
+                                                                <StackPanel.Style>
+                                                                    <Style TargetType="StackPanel">
+                                                                        <Setter Property="TextElement.Foreground" Value="{StaticResource G4WarningBrush}" />
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding IsUnique}" Value="True">
+                                                                                <Setter Property="TextElement.Foreground" Value="{StaticResource G4SuccessBrush}" />
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </StackPanel.Style>
+                                                                <TextBlock FontSize="11">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource G4Icon}">
+                                                                            <Setter Property="Text" Value="&#xE7BA;" />
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsUnique}" Value="True">
+                                                                                    <Setter Property="Text" Value="&#xE73E;" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                                <TextBlock Margin="6,0,0,0" FontSize="12">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Text" Value="{Binding MatchCount, StringFormat='{}{0} matches'}" />
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding IsUnique}" Value="True">
+                                                                                    <Setter Property="Text" Value="unique" />
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                        <TextBox Margin="0,6,0,0" Foreground="{StaticResource G4TextPrimaryBrush}" Style="{StaticResource G4ValueText}" Text="{Binding Value, Mode=OneWay}" />
+                                                    </StackPanel>
+                                                </DockPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Border Margin="0,20" Style="{StaticResource G4Divider}" />
+
+                                <TextBlock Style="{StaticResource G4SectionHeader}" Text="Test a locator" />
+                                <TextBlock Margin="0,0,0,16" Style="{StaticResource G4HintText}" Text="Evaluates a locator exactly as the driver does and highlights every match; live inspection pauses so the highlights stay." />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="160" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <views:FormField Grid.Column="0" Header="Strategy" Hint="The match method.">
+                                        <ComboBox ItemsSource="{Binding LocatorStrategies}" SelectedItem="{Binding TestStrategy}" />
+                                    </views:FormField>
+                                    <views:FormField Grid.Column="2" Header="Value" Hint="The locator to evaluate; Enter runs Find.">
+                                        <TextBox FontFamily="{StaticResource G4MonoFont}" FontSize="13" Text="{Binding TestValue, UpdateSourceTrigger=PropertyChanged}">
+                                            <TextBox.InputBindings>
+                                                <KeyBinding Command="{Binding TestLocatorCommand}" Key="Enter" />
+                                            </TextBox.InputBindings>
+                                        </TextBox>
+                                    </views:FormField>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button AutomationProperties.Name="Find" Command="{Binding TestLocatorCommand}" Style="{StaticResource G4PrimaryButton}" ToolTip="Highlight every match">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock FontSize="12" Style="{StaticResource G4Icon}" Text="&#xE721;" />
+                                            <TextBlock Margin="8,0,0,0" Text="Find" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Margin="8,0,0,0" Command="{Binding ClearLocatorTestCommand}" Content="Clear" ToolTip="Remove the match highlights" />
+                                    <TextBlock Margin="16,0,0,0" FontWeight="SemiBold" Foreground="{StaticResource G4AccentBrush}" Text="{Binding TestResult}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Tab: Actions -->
+                    <TabItem Header="Actions">
+                        <ScrollViewer Style="{StaticResource TabScroller}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource G4SectionHeader}" Text="Quick actions" />
+                                <TextBlock Margin="0,0,0,12" Style="{StaticResource G4HintText}" Text="The driver's interactions for this kind of control, run on the selection." />
+                                <ItemsControl ItemsSource="{Binding QuickActions}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Command="{Binding Command}" Content="{Binding Label}" Margin="0,0,8,8" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <views:FormField Margin="0,12,0,0" Header="Text" Hint="Used by Set text and Select key.">
+                                    <TextBox Text="{Binding ActionText, UpdateSourceTrigger=PropertyChanged}" />
+                                </views:FormField>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+
+                    <!-- Tab: Advanced -->
+                    <TabItem Header="Advanced">
+                        <ScrollViewer Style="{StaticResource TabScroller}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource G4SectionHeader}" Text="Window" />
+                                <TextBlock Margin="0,0,0,16" Style="{StaticResource G4HintText}" Text="Acts on the SAP window that contains the selection." />
+                                <views:FormField Header="Virtual key" Hint="A SAP function key, such as Enter or F3 (Back), sent to the window.">
+                                    <DockPanel>
+                                        <Button Command="{Binding SendVirtualKeyCommand}" Content="Send key" DockPanel.Dock="Right" Margin="8,0,0,0" />
+                                        <ComboBox DisplayMemberPath="Display" ItemsSource="{Binding VirtualKeys}" SelectedItem="{Binding SelectedVirtualKey}" />
+                                    </DockPanel>
+                                </views:FormField>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Command="{Binding SetWindowMaximizedCommand}" Content="Maximize" ToolTip="Maximize the SAP window" />
+                                    <Button Margin="8,0,0,0" Command="{Binding ReadStatusBarCommand}" Content="Read status bar" ToolTip="Show the SAP status bar message in the status line" />
+                                </StackPanel>
+
+                                <Border Margin="0,24" Style="{StaticResource G4Divider}" />
+
+                                <TextBlock Style="{StaticResource G4SectionHeader}" Text="Invoke member" />
+                                <TextBlock Margin="0,0,0,16" Style="{StaticResource G4HintText}" Text="Calls any SAP GUI Scripting member on the selection, for members the driver does not map." />
+                                <Border Margin="0,0,0,16"
+                                        Padding="14,10"
+                                        Style="{StaticResource G4Card}"
+                                        Visibility="{Binding Features.CanInvokeMember, Converter={StaticResource CollapsedWhenTrue}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Foreground="{StaticResource G4TextSecondaryBrush}" Style="{StaticResource G4Icon}" Text="&#xE946;" />
+                                        <TextBlock Margin="10,0,0,0" Style="{StaticResource G4MutedText}" Text="Available in local mode only; the driver does not run arbitrary scripting calls." />
+                                    </StackPanel>
+                                </Border>
+                                <StackPanel Visibility="{Binding Features.CanInvokeMember, Converter={StaticResource VisibleWhenTrue}}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="150" />
+                                            <ColumnDefinition Width="16" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <views:FormField Grid.Column="0" Header="Kind" Hint="Call, read, or write.">
+                                            <ComboBox ItemsSource="{Binding InvokeKinds}" SelectedItem="{Binding InvokeKind}" />
+                                        </views:FormField>
+                                        <views:FormField Grid.Column="2" Header="Member" Hint="The scripting member name, such as pressToolbarButton.">
+                                            <TextBox FontFamily="{StaticResource G4MonoFont}" FontSize="13" Text="{Binding InvokeName, UpdateSourceTrigger=PropertyChanged}" />
+                                        </views:FormField>
+                                    </Grid>
+                                    <views:FormField Header="Arguments" Hint="Comma-separated values, such as &quot;text&quot;, 42, 1.5, true.">
+                                        <DockPanel>
+                                            <Button Command="{Binding InvokeMemberCommand}" Content="Invoke" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource G4PrimaryButton}" />
+                                            <TextBox FontFamily="{StaticResource G4MonoFont}" FontSize="13" Text="{Binding InvokeArguments, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DockPanel>
+                                    </views:FormField>
+                                    <views:FormField Header="Result" Hint="The value or error of the last call.">
+                                        <TextBox FontFamily="{StaticResource G4MonoFont}"
+                                                 FontSize="13"
+                                                 IsReadOnly="True"
+                                                 MinHeight="64"
+                                                 Text="{Binding InvokeResult, Mode=OneWay}"
+                                                 TextWrapping="Wrap"
+                                                 VerticalContentAlignment="Top" />
+                                    </views:FormField>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

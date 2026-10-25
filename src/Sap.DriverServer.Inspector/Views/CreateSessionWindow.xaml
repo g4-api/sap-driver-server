@@ -1,0 +1,221 @@
+<Window x:Class="Sap.DriverServer.Inspector.Views.CreateSessionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:Sap.DriverServer.Inspector.Views"
+        Title="Create driver session"
+        Width="1000"
+        Height="780"
+        MinWidth="820"
+        MinHeight="600"
+        ShowInTaskbar="False"
+        Style="{StaticResource G4WindowStyle}"
+        WindowStartupLocation="CenterOwner">
+
+    <DockPanel>
+        <!-- ======================================================== Footer: status and dialog buttons -->
+        <Border DockPanel.Dock="Bottom"
+                Background="{StaticResource G4BackgroundSecondaryBrush}"
+                BorderBrush="{StaticResource G4BorderPrimaryBrush}"
+                BorderThickness="0,1,0,0"
+                Padding="24,14">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancel" IsCancel="True" MinWidth="88" />
+                    <Button Margin="8,0,0,0"
+                            Command="{Binding CreateCommand}"
+                            Content="Create session"
+                            MinWidth="88">
+                        <Button.Style>
+                            <!-- Create belongs to the New session tab; the Attach tab has its own Attach button, so Enter never creates there. -->
+                            <Style TargetType="Button" BasedOn="{StaticResource G4PrimaryButton}">
+                                <Setter Property="IsDefault" Value="True" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedIndex, ElementName=ModeTabs}" Value="1">
+                                        <Setter Property="IsDefault" Value="False" />
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
+                <TextBlock Style="{StaticResource G4MutedText}" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" VerticalAlignment="Center" />
+            </DockPanel>
+        </Border>
+
+        <TabControl x:Name="ModeTabs" Margin="28,16,28,0">
+            <!-- ==================================================== New session -->
+            <TabItem Header="New session">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" Padding="0,24,8,24" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <!-- Driver and saved capability sets. -->
+                        <views:FormField Header="Driver URL" Hint="Address of the SAP driver server, such as http://localhost:5556/wd/hub.">
+                            <TextBox Text="{Binding DriverUrl, UpdateSourceTrigger=PropertyChanged}" />
+                        </views:FormField>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <views:FormField Grid.Column="0" Header="Saved set" Hint="Loads a saved driver address and capabilities.">
+                                <ComboBox DisplayMemberPath="Name" ItemsSource="{Binding SavedSets}" SelectedItem="{Binding SelectedSet}" />
+                            </views:FormField>
+                            <views:FormField Grid.Column="2" Header="Set name" Hint="The name Save and Rename use.">
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right" Margin="8,0,0,0" Orientation="Horizontal">
+                                        <Button Command="{Binding SaveSetCommand}" Content="Save" />
+                                        <Button Margin="8,0,0,0" Command="{Binding RenameSetCommand}" Content="Rename" />
+                                        <Button Margin="8,0,0,0" Command="{Binding DeleteSetCommand}" Content="Delete" ToolTip="Delete the selected saved set" />
+                                    </StackPanel>
+                                    <TextBox Text="{Binding SetName, UpdateSourceTrigger=PropertyChanged}" />
+                                </DockPanel>
+                            </views:FormField>
+                        </Grid>
+
+                        <Border Margin="0,8,0,24" Style="{StaticResource G4Divider}" />
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="32" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- The sap:options form. -->
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Style="{StaticResource G4SectionHeader}" Text="SAP session" />
+                                <TextBlock Margin="0,0,0,20" Style="{StaticResource G4HintText}" Text="The sap:options capability. Fill only what identifies one session; the driver refuses a selection that matches several." />
+                                <views:FormField Header="Session path" Hint="One session by its id, such as /app/con[0]/ses[0].">
+                                    <TextBox FontFamily="{StaticResource G4MonoFont}" FontSize="13" Text="{Binding SessionPath, UpdateSourceTrigger=PropertyChanged}" />
+                                </views:FormField>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <views:FormField Grid.Column="0" Header="Connection index" Hint="Zero-based connection in SAP Logon.">
+                                        <TextBox Text="{Binding ConnectionIndex, UpdateSourceTrigger=PropertyChanged}" />
+                                    </views:FormField>
+                                    <views:FormField Grid.Column="2" Header="Session index" Hint="Zero-based session in the connection.">
+                                        <TextBox Text="{Binding SessionIndex, UpdateSourceTrigger=PropertyChanged}" />
+                                    </views:FormField>
+                                </Grid>
+                                <views:FormField Header="Connection description" Hint="The SAP Logon entry name.">
+                                    <TextBox Text="{Binding ConnectionDescription, UpdateSourceTrigger=PropertyChanged}" />
+                                </views:FormField>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="16" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <views:FormField Grid.Column="0" Header="System name" Hint="The SAP system id, such as DEV.">
+                                        <TextBox Text="{Binding SystemName, UpdateSourceTrigger=PropertyChanged}" />
+                                    </views:FormField>
+                                    <views:FormField Grid.Column="2" Header="Client" Hint="The three-digit SAP client, such as 100.">
+                                        <TextBox Text="{Binding Client, UpdateSourceTrigger=PropertyChanged}" />
+                                    </views:FormField>
+                                </Grid>
+
+                                <Border Margin="0,8,0,24" Style="{StaticResource G4Divider}" />
+
+                                <views:FormField Header="Prefill from this PC" Hint="Copies the options of a SAP GUI session open on this PC.">
+                                    <StackPanel>
+                                        <Border Margin="0,0,0,8"
+                                                Padding="14,10"
+                                                Style="{StaticResource G4Card}">
+                                            <Border.Visibility>
+                                                <Binding Path="IsLocalAvailable">
+                                                    <Binding.Converter>
+                                                        <views:CollapsedWhenTrueConverter />
+                                                    </Binding.Converter>
+                                                </Binding>
+                                            </Border.Visibility>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Foreground="{StaticResource G4TextSecondaryBrush}" Style="{StaticResource G4Icon}" Text="&#xE946;" />
+                                                <TextBlock Margin="10,0,0,0" Style="{StaticResource G4MutedText}" Text="No SAP GUI on this PC; fill the options by hand." />
+                                            </StackPanel>
+                                        </Border>
+                                        <DockPanel IsEnabled="{Binding IsLocalAvailable}">
+                                            <StackPanel DockPanel.Dock="Right" Margin="8,0,0,0" Orientation="Horizontal">
+                                                <Button AutomationProperties.Name="Refresh local sessions"
+                                                        Command="{Binding RefreshLocalSessionsCommand}"
+                                                        Content="&#xE72C;"
+                                                        Style="{StaticResource G4IconButton}"
+                                                        ToolTip="Read the SAP GUI sessions on this PC" />
+                                                <Button Margin="8,0,0,0" Command="{Binding PrefillCommand}" Content="Use" ToolTip="Copy this session's options into the form" />
+                                            </StackPanel>
+                                            <ComboBox DisplayMemberPath="Display" ItemsSource="{Binding LocalSessions}" SelectedItem="{Binding SelectedLocalSession}" />
+                                        </DockPanel>
+                                    </StackPanel>
+                                </views:FormField>
+                            </StackPanel>
+
+                            <!-- The capabilities JSON, kept in sync with the form. -->
+                            <DockPanel Grid.Column="2">
+                                <TextBlock DockPanel.Dock="Top" Style="{StaticResource G4SectionHeader}" Text="Capabilities" />
+                                <TextBlock DockPanel.Dock="Top" Margin="0,0,0,20" Style="{StaticResource G4HintText}" Text="The alwaysMatch JSON sent to the driver. It stays in sync with the form; edit either one." />
+                                <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0" Orientation="Horizontal">
+                                    <StackPanel.Style>
+                                        <Style TargetType="StackPanel">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding JsonError}" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding JsonError}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </StackPanel.Style>
+                                    <TextBlock Foreground="{StaticResource G4ErrorBrush}" Style="{StaticResource G4Icon}" Text="&#xE783;" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                    <TextBlock Margin="8,0,0,0" Foreground="{StaticResource G4ErrorBrush}" Text="{Binding JsonError}" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <TextBox AcceptsReturn="True"
+                                         AcceptsTab="True"
+                                         FontFamily="{StaticResource G4MonoFont}"
+                                         FontSize="13"
+                                         HorizontalScrollBarVisibility="Auto"
+                                         MinHeight="360"
+                                         Padding="12,10"
+                                         Text="{Binding CapabilitiesJson, UpdateSourceTrigger=PropertyChanged}"
+                                         VerticalContentAlignment="Top"
+                                         VerticalScrollBarVisibility="Auto" />
+                            </DockPanel>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ==================================================== Attach to an open session -->
+            <TabItem Header="Attach to open session">
+                <StackPanel Margin="0,24,8,24" MaxWidth="720" HorizontalAlignment="Left">
+                    <TextBlock Style="{StaticResource G4SectionHeader}" Text="Open sessions" />
+                    <TextBlock Margin="0,0,0,20" Style="{StaticResource G4HintText}" Text="Inspect a session another client created. The inspector never deletes a session it attached to." />
+                    <views:FormField Header="Driver URL" Hint="Address of the SAP driver server that owns the session.">
+                        <TextBox Text="{Binding DriverUrl, UpdateSourceTrigger=PropertyChanged}" />
+                    </views:FormField>
+                    <views:FormField Header="Session" Hint="Sessions the driver reports in /status; Refresh reads them again.">
+                        <DockPanel>
+                            <Button AutomationProperties.Name="Refresh open sessions" Command="{Binding RefreshOpenSessionsCommand}" DockPanel.Dock="Right" Margin="8,0,0,0" ToolTip="Read the driver's open sessions">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock FontSize="12" Style="{StaticResource G4Icon}" Text="&#xE72C;" />
+                                    <TextBlock Margin="8,0,0,0" Text="Refresh" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <ComboBox ItemsSource="{Binding OpenSessions}" SelectedItem="{Binding SelectedOpenSession}" />
+                        </DockPanel>
+                    </views:FormField>
+                    <Button AutomationProperties.Name="Attach" Command="{Binding AttachCommand}" HorizontalAlignment="Left" MinWidth="120" Style="{StaticResource G4PrimaryButton}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontSize="12" Style="{StaticResource G4Icon}" Text="&#xE71B;" />
+                            <TextBlock Margin="8,0,0,0" Text="Attach" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
