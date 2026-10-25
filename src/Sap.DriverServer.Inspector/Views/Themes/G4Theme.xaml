@@ -76,9 +76,10 @@
     <FontFamily x:Key="G4MonoFont">pack://application:,,,/Sap.DriverServer.Inspector;component/Fonts/#IBM Plex Mono</FontFamily>
     <!-- Windows 11 icon font, with the Windows 10 icon font as fallback; both ship with Windows. -->
     <FontFamily x:Key="G4IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
-    <CornerRadius x:Key="G4ControlRadius">6</CornerRadius>
-    <CornerRadius x:Key="G4PanelRadius">8</CornerRadius>
-    <CornerRadius x:Key="G4OptionRadius">4</CornerRadius>
+    <!-- Square corners everywhere; the tokens stay so every template keeps reading its shape from one place. -->
+    <CornerRadius x:Key="G4ControlRadius">0</CornerRadius>
+    <CornerRadius x:Key="G4PanelRadius">0</CornerRadius>
+    <CornerRadius x:Key="G4OptionRadius">0</CornerRadius>
 
     <!-- Chevrons used by the combo box and the tree expander. -->
     <Geometry x:Key="G4ChevronDownGeometry">M 0 0 L 4 4 L 8 0</Geometry>
@@ -100,7 +101,7 @@
         <Setter Property="Control.Template">
             <Setter.Value>
                 <ControlTemplate>
-                    <Rectangle Margin="-3" RadiusX="8" RadiusY="8" SnapsToDevicePixels="True" Stroke="{StaticResource G4AccentBrush}" StrokeThickness="2" />
+                    <Rectangle Margin="-3" SnapsToDevicePixels="True" Stroke="{StaticResource G4AccentBrush}" StrokeThickness="2" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -474,9 +475,8 @@
                                 Background="{StaticResource G4BackgroundTertiaryBrush}"
                                 BorderBrush="{StaticResource G4BorderSecondaryBrush}"
                                 BorderThickness="1"
-                                CornerRadius="10"
                                 VerticalAlignment="Top">
-                            <Ellipse x:Name="Knob" Width="12" Height="12" Margin="3,0" Fill="{StaticResource G4TextSecondaryBrush}" HorizontalAlignment="Left" />
+                            <Rectangle x:Name="Knob" Width="12" Height="12" Margin="3,0" Fill="{StaticResource G4TextSecondaryBrush}" HorizontalAlignment="Left" />
                         </Border>
                         <ContentPresenter Grid.Column="1" Margin="12,0,0,0" RecognizesAccessKey="True" />
                     </Grid>
@@ -484,9 +484,10 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource G4TextTertiaryBrush}" />
                         </Trigger>
+                        <!-- On is green, the universal "enabled" color, so a switch reads at a glance without the accent. -->
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Track" Property="Background" Value="{StaticResource G4AccentBrush}" />
-                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource G4AccentBrush}" />
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource G4SuccessBrush}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource G4SuccessBrush}" />
                             <Setter TargetName="Knob" Property="Fill" Value="{StaticResource G4TextInverseBrush}" />
                             <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
                         </Trigger>
@@ -650,7 +651,7 @@
                 <ControlTemplate TargetType="TabItem">
                     <Grid Margin="0,0,24,0" Background="Transparent">
                         <ContentPresenter Margin="0,8,0,10" ContentSource="Header" RecognizesAccessKey="True" />
-                        <Border x:Name="Underline" Height="2" Background="Transparent" CornerRadius="1" VerticalAlignment="Bottom" />
+                        <Border x:Name="Underline" Height="2" Background="Transparent" VerticalAlignment="Bottom" />
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -732,7 +733,7 @@
                     <StackPanel>
                         <Border x:Name="Row" Background="Transparent" CornerRadius="{StaticResource G4OptionRadius}">
                             <Grid>
-                                <Border x:Name="Marker" Width="2" Margin="0,6" Background="Transparent" CornerRadius="1" HorizontalAlignment="Left" />
+                                <Border x:Name="Marker" Width="2" Margin="0,6" Background="Transparent" HorizontalAlignment="Left" />
                                 <DockPanel Margin="4,0,8,0">
                                     <ToggleButton x:Name="Expander"
                                                   ClickMode="Press"
@@ -905,7 +906,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Thumb">
-                    <Border x:Name="Grip" Margin="2" Background="{StaticResource G4BorderSecondaryBrush}" CornerRadius="3" />
+                    <Border x:Name="Grip" Margin="2" Background="{StaticResource G4BorderSecondaryBrush}" />
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Grip" Property="Background" Value="{StaticResource G4TextTertiaryBrush}" />
