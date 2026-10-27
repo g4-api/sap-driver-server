@@ -17,7 +17,7 @@ env:
   buildConfiguration: 'Release'
   inspectorName: Sap.DriverServer.Inspector
   projectName: Sap.DriverServer
-  runtimeIdentifier: 'win-x64'
+  publishRuntime: 'win-x64'
   solutionName: Sap
   testProjectName: Sap.DriverServer.Domain.UnitTests
 
@@ -113,14 +113,14 @@ jobs:
       run: |
         dotnet publish ${{ env.projectName }}/${{ env.projectName }}.csproj `
             --configuration ${{ env.buildConfiguration }} `
-            --runtime ${{ env.runtimeIdentifier }} `
+            --runtime ${{ env.publishRuntime }} `
             --self-contained false `
             --output ${{ env.binariesDirectory }}/sap-driver-server
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
         dotnet publish ${{ env.inspectorName }}/${{ env.inspectorName }}.csproj `
             --configuration ${{ env.buildConfiguration }} `
-            --runtime ${{ env.runtimeIdentifier }} `
+            --runtime ${{ env.publishRuntime }} `
             --self-contained false `
             --output ${{ env.binariesDirectory }}/sap-inspector
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -132,10 +132,10 @@ jobs:
         New-Item -Path "${{ env.artifactStagingDirectory }}" -ItemType Directory
         Compress-Archive `
             -Path ${{ env.binariesDirectory }}/sap-driver-server/* `
-            -DestinationPath ${{ env.artifactStagingDirectory }}/${{ env.projectName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
+            -DestinationPath ${{ env.artifactStagingDirectory }}/${{ env.projectName }}.${{ env.buildVersion }}-${{ env.publishRuntime }}.zip
         Compress-Archive `
             -Path ${{ env.binariesDirectory }}/sap-inspector/* `
-            -DestinationPath ${{ env.artifactStagingDirectory }}/${{ env.inspectorName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
+            -DestinationPath ${{ env.artifactStagingDirectory }}/${{ env.inspectorName }}.${{ env.buildVersion }}-${{ env.publishRuntime }}.zip
 
     # Step to upload the build artifacts
     - name: Upload Build Artifacts
@@ -175,8 +175,8 @@ jobs:
       uses: softprops/action-gh-release@v3
       with:
         files: |
-          ./${{ env.projectName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
-          ./${{ env.inspectorName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
+          ./${{ env.projectName }}.${{ env.buildVersion }}-${{ env.publishRuntime }}.zip
+          ./${{ env.inspectorName }}.${{ env.buildVersion }}-${{ env.publishRuntime }}.zip
         tag_name: v${{ env.buildVersion }}-preview
         name: ${{ env.artifactType }} v${{ env.buildVersion }}
         generate_release_notes: true
