@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12224.181 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sap.DriverServer.Models", "Sap.DriverServer.Models\Sap.DriverServer.Models.csproj", "{9C105E77-C519-49A0-A31C-BCF77270F7B8}"
 EndProject
@@ -18,6 +18,28 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sap.DriverServer.Simulator", "Sap.DriverServer.Simulator\Sap.DriverServer.Simulator.csproj", "{FBB4929D-00A7-4845-8803-C84125CBC57E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sap.DriverServer.Settings", "Sap.DriverServer.Settings\Sap.DriverServer.Settings.csproj", "{2EDDFA18-B8E3-40A2-9F3E-7113BFB4A7A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".git", ".git", "{307DE010-9689-40EB-949B-3E5743C55311}"
+	ProjectSection(SolutionItems) = preProject
+		..\.gitignore = ..\.gitignore
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{2C1C7665-421B-4D01-B18E-4C871F103B4A}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\release-pipeline.yml = ..\.github\workflows\release-pipeline.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".tests", ".tests", "{DCC18865-4C2B-42CB-8007-E3D5FC1F9BA9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docs", ".docs", "{00B90BA9-EE70-4B00-B85A-960F4C3C41C3}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\capabilities.md = ..\docs\capabilities.md
+		..\docs\inspector.md = ..\docs\inspector.md
+		..\docs\simulator.md = ..\docs\simulator.md
+		..\docs\troubleshooting.md = ..\docs\troubleshooting.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
