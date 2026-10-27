@@ -53,9 +53,10 @@ Every input has its label above it and a one-line hint under the label. Screen r
 input's name and the hint as its help text.
 
 The inspector uses a calm variant of the G4 Gateway theme, chosen to limit eye fatigue in long sessions: near-black
-surfaces, soft white text instead of pure white, few borders, 14px IBM Plex type, and the electric blue accent only
-for the main action, focus, selection, and the active tab. The fonts are embedded under the SIL Open Font License,
-which ships as `Fonts\OFL.txt` beside the executable. Icons come from the Windows icon font. On Windows 11 the title
+surfaces, soft white text instead of pure white, few borders, 14px IBM Plex type with Chakra Petch titles (the Z4 Golem
+type set), and the electric blue accent only for the main action, focus, selection, and the active tab. The fonts are
+embedded under the SIL Open Font License, which ships as `Fonts\OFL.txt` and `Fonts\ChakraPetch-OFL.txt` beside the
+executable. Icons are SVG paths kept in `Assets\Icons`; a few still come from the Windows icon font. On Windows 11 the title
 bar takes the same colors. The selection frame drawn over SAP GUI stays Windows blue, and locator matches stay
 orange, so they read clearly on SAP's light screens. The screen canvas of driver sessions uses electric blue for the
 selection and yellow for matches.

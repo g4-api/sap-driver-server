@@ -40,6 +40,65 @@ namespace Sap.DriverServer.Domain.UnitTests
             Assert.IsTrue((bool)json["g4:trace"]);
         }
 
+        [TestMethod(DisplayName = "Verify that Format re-indents valid JSON with four spaces and refills the form.")]
+        public void FormatJsonTest()
+        {
+            // Arrange: a dialog with compact JSON typed by hand.
+            using var store = new TemporaryStore();
+            var model = NewModel(store.Store);
+            model.CapabilitiesJson = "{\"sap:options\":{\"systemName\":\"DEV\"}}";
+
+            // Act: format the JSON.
+            model.FormatJson();
+            var lines = model.CapabilitiesJson.Split('\n').Select(i => i.TrimEnd('\r')).ToArray();
+
+            // Assert: one member per line with a 4-space indent, no error, and the form still holds the option.
+            Assert.AreEqual("{", lines[0]);
+            Assert.AreEqual("    \"sap:options\": {", lines[1]);
+            Assert.AreEqual("        \"systemName\": \"DEV\"", lines[2]);
+            Assert.AreEqual(string.Empty, model.JsonError);
+            Assert.AreEqual("DEV", model.SystemName);
+        }
+
+        [TestMethod(DisplayName = "Verify that Format keeps invalid JSON as typed and says to correct it first.")]
+        public void FormatJsonInvalidTest()
+        {
+            // Arrange: a dialog with broken JSON, then with a JSON array instead of an object.
+            using var store = new TemporaryStore();
+            var model = NewModel(store.Store);
+            const string broken = "{\"sap:options\": ";
+            model.CapabilitiesJson = broken;
+
+            // Act: format the broken text, then the array.
+            model.FormatJson();
+            var textAfterBroken = model.CapabilitiesJson;
+            var errorAfterBroken = model.JsonError;
+            model.CapabilitiesJson = "[1, 2]";
+            model.FormatJson();
+
+            // Assert: both texts stay as typed, and each error ends with the guidance.
+            Assert.AreEqual(broken, textAfterBroken);
+            Assert.EndsWith("Correct the JSON text before formatting.", errorAfterBroken);
+            Assert.AreEqual("[1, 2]", model.CapabilitiesJson);
+            Assert.AreEqual("The capabilities must be a JSON object. Correct the JSON text before formatting.", model.JsonError);
+        }
+
+        [TestMethod(DisplayName = "Verify that Format leaves empty text empty.")]
+        public void FormatJsonEmptyTest()
+        {
+            // Arrange: a dialog whose JSON was cleared.
+            using var store = new TemporaryStore();
+            var model = NewModel(store.Store);
+            model.CapabilitiesJson = string.Empty;
+
+            // Act: format the empty text.
+            model.FormatJson();
+
+            // Assert: the text stays empty and no error is reported.
+            Assert.AreEqual(string.Empty, model.CapabilitiesJson);
+            Assert.AreEqual(string.Empty, model.JsonError);
+        }
+
         [TestMethod(DisplayName = "Verify that JSON edits refill the form, invalid JSON is reported, and an empty form removes sap:options.")]
         public void JsonToFormTest()
         {

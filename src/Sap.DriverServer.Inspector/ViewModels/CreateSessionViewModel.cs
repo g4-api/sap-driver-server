@@ -39,8 +39,12 @@ namespace Sap.DriverServer.Inspector.ViewModels
         // Names the capability that carries the SAP session selection.
         private const string OptionsKey = SapCapabilities.Options;
 
-        // Writes the capabilities JSON indented, because users read and edit it in the dialog.
-        private static readonly JsonSerializerOptions IndentedJson = new() { WriteIndented = true };
+        // Tells the user what to do when Format meets JSON it cannot parse.
+        private const string FormatGuidance = "Correct the JSON text before formatting.";
+
+        // Writes the capabilities JSON with a 4-space indent, because users read and edit it in the dialog; the G4 Hub
+        // JSON editors use the same indent.
+        private static readonly JsonSerializerOptions IndentedJson = new() { IndentSize = 4, WriteIndented = true };
         #endregion
 
         #region *** Fields       ***
@@ -128,6 +132,7 @@ namespace Sap.DriverServer.Inspector.ViewModels
             AttachCommand = new RelayCommand(_ => _ = RunAsync(AttachAsync), _ => !IsBusy && !string.IsNullOrEmpty(SelectedOpenSession));
             CreateCommand = new RelayCommand(_ => _ = RunAsync(CreateAsync), _ => !IsBusy && JsonError.Length == 0);
             DeleteSetCommand = new RelayCommand(_ => DeleteSet(), _ => SelectedSet is not null);
+            FormatJsonCommand = new RelayCommand(_ => FormatJson());
             PrefillCommand = new RelayCommand(_ => Prefill(SelectedLocalSession), _ => SelectedLocalSession is not null);
             RefreshLocalSessionsCommand = new RelayCommand(_ => _ = RunAsync(RefreshLocalSessionsAsync), _ => IsLocalAvailable && !IsBusy);
             RefreshOpenSessionsCommand = new RelayCommand(_ => _ = RunAsync(RefreshOpenSessionsAsync), _ => !IsBusy);
@@ -211,6 +216,11 @@ namespace Sap.DriverServer.Inspector.ViewModels
         /// Gets the command that deletes the selected saved set.
         /// </summary>
         public ICommand DeleteSetCommand { get; }
+
+        /// <summary>
+        /// Gets the command that checks the capabilities JSON and re-indents it.
+        /// </summary>
+        public ICommand FormatJsonCommand { get; }
 
         /// <summary>
         /// Gets or sets the driver address.
@@ -416,6 +426,44 @@ namespace Sap.DriverServer.Inspector.ViewModels
             }
 
             await CompleteAsync(new DriverInspectorSource(client, sessionId, isOwner: true)).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Checks the capabilities JSON and re-indents it with a 4-space indent.
+        /// </summary>
+        /// <remarks>
+        /// Valid JSON is rewritten and applied like an edit, so the form follows it. Text that does not parse, or that
+        /// is not a JSON object, stays as typed and <see cref="JsonError"/> says to correct it first. Empty text stays
+        /// empty, because the driver already reads it as no capabilities.
+        /// </remarks>
+        public void FormatJson()
+        {
+            // Leave empty text alone; there is nothing to indent.
+            if (string.IsNullOrWhiteSpace(CapabilitiesJson))
+            {
+                return;
+            }
+
+            // Parse the text; keep it as typed and explain the failure when it is not a JSON object.
+            JsonObject root;
+            try
+            {
+                root = JsonNode.Parse(CapabilitiesJson) as JsonObject;
+            }
+            catch (JsonException exception)
+            {
+                JsonError = $"{exception.Message} {FormatGuidance}";
+                return;
+            }
+
+            if (root is null)
+            {
+                JsonError = $"The capabilities must be a JSON object. {FormatGuidance}";
+                return;
+            }
+
+            // Write the indented text through the property, so the form refreshes exactly as after an edit.
+            CapabilitiesJson = root.ToJsonString(IndentedJson);
         }
 
         /// <summary>

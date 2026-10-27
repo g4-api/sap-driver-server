@@ -20,10 +20,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- G4 brand: the window icon, and IBM Plex Sans and Mono (SIL Open Font License, see Fonts\OFL.txt) embedded so the theme renders without installed fonts. -->
+		<!-- G4 brand: the window icon, IBM Plex Sans and Mono, and the Chakra Petch display face (SIL Open Font License, see Fonts\OFL.txt and Fonts\ChakraPetch-OFL.txt) embedded so the theme renders without installed fonts. -->
 		<Resource Include="Fonts\*.ttf" />
 		<Resource Include="Assets\g4.ico" />
-		<None Include="Fonts\OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="Fonts\*.txt" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup>
