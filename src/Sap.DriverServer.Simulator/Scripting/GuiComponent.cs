@@ -120,20 +120,17 @@ namespace Sap.DriverServer.Simulator.Scripting
             return [];
         }
 
-        // Derives SAP's Name from a segment: indexed segments keep the prefix, others drop it.
+        // Derives SAP's Name from a segment: the index is dropped, and so is the type prefix unless nothing else remains.
         private static string ConvertToName(string segment)
         {
-            // Keep "btn" for "btn[3]" and "wnd" for "wnd[0]".
+            // Drop the index, as in "btn[3]" to "btn" and "txtITAB-MATNR[1,4]" to "txtITAB-MATNR".
             var bracket = segment.IndexOf('[', StringComparison.Ordinal);
-            if (bracket > 0)
-            {
-                return segment[..bracket];
-            }
+            var name = bracket > 0 ? segment[..bracket] : segment;
 
-            // Drop the type prefix, as in "txtRSYST-BNAME" to "RSYST-BNAME"; segments without a known prefix stay whole.
-            var prefix = GuiComponentFactory.GetPrefix(segment);
+            // Drop the type prefix, as in "txtRSYST-BNAME" to "RSYST-BNAME"; "btn", "wnd", and unknown prefixes stay whole.
+            var prefix = GuiComponentFactory.GetPrefix(name);
 
-            return prefix.Length > 0 && prefix.Length < segment.Length ? segment[prefix.Length..] : segment;
+            return prefix.Length > 0 && prefix.Length < name.Length ? name[prefix.Length..] : name;
         }
         #endregion
     }

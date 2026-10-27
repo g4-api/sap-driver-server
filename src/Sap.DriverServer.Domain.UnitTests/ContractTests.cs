@@ -301,6 +301,45 @@ namespace Sap.DriverServer.Domain.UnitTests
             Assert.AreEqual(20, rectValue.GetProperty("height").GetInt32());
         }
 
+        [TestMethod(DisplayName = "Verify that the call and property endpoints run allow-listed members, return element references, and refuse others.")]
+        public async Task SapMemberEndpointsTestAsync()
+        {
+            // Arrange: a grid view shell, a table control with one cell, and a status bar message shown as a popup.
+            var application = FakeSapTree.NewApplication();
+            var userArea = (FakeSapGuiNode)application.FindById("/app/con[0]/ses[0]/wnd[0]/usr");
+            ((FakeSapGuiNode)application.FindById("/app/con[0]/ses[0]/wnd[0]/sbar")).With("MessageAsPopup", true);
+            var grid = FakeSapTree.AddControl(userArea, name: "shellGRID", type: "GuiShell").With("SubType", "GridView");
+            grid.Methods["getCellValue"] = _ => "0029";
+            var table = FakeSapTree.AddControl(userArea, name: "tblITEMS", type: "GuiTableControl");
+            var cell = FakeSapTree.AddControl(table, name: "txtITAB-POSNR[0,1]", type: "GuiTextField");
+            table.Methods["getCell"] = _ => cell;
+            using var factory = NewFactory(application);
+            using var client = factory.CreateClient();
+            var sessionId = await NewSessionAsync(client);
+            var gridId = await FindElementAsync(client, sessionId, new LocationStrategyModel { Using = "id", Value = "wnd[0]/usr/shellGRID" });
+            var tableId = await FindElementAsync(client, sessionId, new LocationStrategyModel { Using = "id", Value = "wnd[0]/usr/tblITEMS" });
+
+            // Act: read a cell value, get a table cell, set the grid selection, call a refused method, and read the status bar.
+            var value = await PostJsonAsync(client, $"/session/{sessionId}/sap/element/{gridId}/call", "{\"method\":\"getCellValue\",\"arguments\":[3,\"CONNID\"]}");
+            var cellCall = await PostJsonAsync(client, $"/session/{sessionId}/sap/element/{tableId}/call", "{\"method\":\"getCell\",\"arguments\":[1,0]}");
+            var cellId = cellCall.Json.GetProperty("value").GetProperty(ElementKey).GetString();
+            var cellType = await GetJsonAsync(client, $"/session/{sessionId}/element/{cellId}/attribute/type");
+            var property = await PostJsonAsync(client, $"/session/{sessionId}/sap/element/{gridId}/property", "{\"name\":\"selectedRows\",\"value\":\"2-4\"}");
+            var refused = await PostJsonAsync(client, $"/session/{sessionId}/sap/element/{gridId}/call", "{\"method\":\"close\"}");
+            var statusBar = await GetJsonAsync(client, $"/session/{sessionId}/sap/statusbar");
+
+            // Assert: allow-listed members reached SAP with typed arguments, the cell is a usable reference, and close was refused.
+            Assert.AreEqual("0029", value.Json.GetProperty("value").GetString());
+            Assert.Contains("getCellValue(3,CONNID)", grid.Invocations);
+            Assert.AreEqual("GuiTextField", cellType.GetProperty("value").GetString());
+            Assert.AreEqual(HttpStatusCode.OK, property.StatusCode);
+            Assert.Contains("set SelectedRows=2-4", grid.Invocations);
+            Assert.AreEqual(HttpStatusCode.InternalServerError, refused.StatusCode);
+            Assert.AreEqual(WebDriverErrorCodes.UnsupportedOperation, refused.Json.GetProperty("value").GetProperty("error").GetString());
+            Assert.DoesNotContain("close()", grid.Invocations);
+            Assert.IsTrue(statusBar.GetProperty("value").GetProperty("messageAsPopup").GetBoolean());
+        }
+
         // Finds one element through HTTP and returns its reference identifier.
         private static async Task<string> FindElementAsync(HttpClient client, string sessionId, LocationStrategyModel locator)
         {

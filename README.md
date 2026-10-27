@@ -191,10 +191,10 @@ XPath is resolved in one of three ways, and all of them return the same matches 
 | Window handle(s), switch, maximize | Implemented | SAP frame windows `wnd[n]` |
 | Screenshot | Implemented | SAP window `HardCopy` as PNG |
 | Actions | Limited | Key actions that map to SAP virtual keys only |
-| SAP-only endpoints | Implemented | `/sap/sessions`, `sap/vkey`, `sap/statusbar`, `sap/element/at` |
+| SAP-only endpoints | Implemented | `/sap/sessions`, `sap/vkey`, `sap/statusbar`, `sap/element/at`, `sap/element/{e}/call`, `sap/element/{e}/property` |
 | Execute script | Not supported | Returns `unsupported operation` |
 | User32 endpoints, `/scancodes` | Not supported | Raw Windows input has no scripting equivalent |
-| Shell internals (grid cells, tree nodes) | Not supported | Visible as one `GuiShell` element |
+| Shell internals (grid cells, tree nodes) | Implemented through SAP routes | Allow-listed shell methods and properties; the shell itself is one `GuiShell` element |
 | Events and recording | Not supported | The UIA server has no event contract to mirror |
 
 See [Capability mapping](docs/capabilities.md) for every route and [Troubleshooting](docs/troubleshooting.md) for
@@ -276,9 +276,10 @@ shows a screenshot canvas you can hover. Start it with `dotnet run --project src
 ## SAP GUI simulator
 
 `Sap.DriverServer.Simulator` is a 32-bit test double for SAP Logon. It registers `SAPGUI` in the running object table
-and exposes SAP-named scripting objects over real windows: a logon screen, SAP Easy Access, a form, a popup, and a
-grid. The driver and the inspector attach to it with their production code, so you can try them, and test them end to
-end, on a machine without SAP GUI. It cannot prove that SAP GUI behaves like the simulator; see
+and exposes SAP-named scripting objects over real windows: a logon screen, SAP Easy Access, a form, a popup, a grid,
+and a test lab of `ZSIM_*` transactions with common automation pitfalls, such as table controls, ALV grids, trees,
+lists, and delayed or optional controls. The driver and the inspector attach to it with their production code, so
+you can try them, and test them end to end, on a machine without SAP GUI. It cannot prove that SAP GUI behaves like the simulator; see
 [SAP GUI simulator](docs/simulator.md) for what it covers.
 
 ## Tests

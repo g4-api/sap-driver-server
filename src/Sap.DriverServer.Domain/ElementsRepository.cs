@@ -188,6 +188,27 @@ namespace Sap.DriverServer.Domain
         }
 
         /// <inheritdoc />
+        public (int StatusCode, object Value) InvokeElementMethod(string session, string element, SapMethodCallModel call)
+        {
+            // Call the allow-listed method; controls it returns become element references in this session's cache.
+            return InvokeOnElement(
+                session,
+                element,
+                node => SapMemberInteractions.InvokeMethod(node, call, result => NewElementReference(session, result)));
+        }
+
+        /// <inheritdoc />
+        public int SetElementProperty(string session, string element, SapPropertyModel property)
+        {
+            // Set the allow-listed property; names outside the control family's list raise "unsupported operation".
+            return InvokeOnElement(session, element, node =>
+            {
+                SapMemberInteractions.SetProperty(node, property);
+                return true;
+            }).StatusCode;
+        }
+
+        /// <inheritdoc />
         public int SetValue(string session, string element, string text)
         {
             // Replace the control's text; non-text controls raise "element not interactable".
@@ -259,6 +280,16 @@ namespace Sap.DriverServer.Domain
                     ? (StatusCodes.Status404NotFound, default(T))
                     : (StatusCodes.Status200OK, operation(node));
             });
+        }
+
+        // Issues an element reference for a control a method returned, in the W3C reference shape.
+        private Dictionary<string, object> NewElementReference(string session, ISapGuiNode node)
+        {
+            // Reuse or add the session cache entry, so the client can use the reference with every element endpoint.
+            var match = new SapElementModel { SapId = node.Id, Type = node.Type };
+            var elementModel = GetOrAddReference(_sessions[session], match);
+
+            return new Dictionary<string, object> { [ElementProperties.ElementReference] = elementModel.Id };
         }
         #endregion
     }

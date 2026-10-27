@@ -44,10 +44,18 @@ Routes are served under both `/` and `/wd/hub/`.
 
 ### Attribute names
 
-The attribute endpoint accepts these names, case-insensitively: `changeable`, `containerType`, `defaultTooltip`,
-`handle`, `height`, `highlighted`, `iconName`, `id`, `key`, `left`, `maxLength`, `modified`, `name`, `numerical`,
-`required`, `selected`, `subType`, `text`, `tooltip`, `top`, `type`, `value`, and `width`. The `left` and `top`
-names read `ScreenLeft` and `ScreenTop`, and Booleans are returned as `true` or `false`.
+The attribute endpoint accepts these names, case-insensitively. The `left` and `top` names read `ScreenLeft` and
+`ScreenTop`, and Booleans are returned as `true` or `false`. A name the control does not expose reads as an empty
+string, and password text is never returned, through `text` or `displayedText`.
+
+| Group | Names |
+| --- | --- |
+| Every control | `changeable`, `containerType`, `defaultTooltip`, `handle`, `height`, `highlighted`, `iconName`, `id`, `left`, `modified`, `name`, `subType`, `text`, `tooltip`, `top`, `type`, `width` |
+| Fields and labels | `charLeft`, `charTop`, `displayedText`, `isListElement`, `isOField`, `key`, `maxLength`, `numerical`, `required`, `selected`, `value` |
+| Grids, tables, and trees | `columnCount`, `currentCellColumn`, `currentCellRow`, `firstVisibleRow`, `rowCount`, `selectedItemNode`, `selectedNode`, `selectedRows`, `toolbarButtonCount`, `visibleRowCount` |
+| Toolbars and text edits | `buttonCount`, `lineCount` |
+| Status bar | `messageAsPopup` |
+| Scroll bars | `verticalScrollbar.position`, `verticalScrollbar.maximum`, `verticalScrollbar.pageSize`, and the same three for `horizontalScrollbar` |
 
 ## Actions and keys
 
@@ -77,8 +85,40 @@ other virtual key.
 | --- | --- | --- |
 | `GET /sap/sessions` | `GuiApplication`, `GuiConnection`, `GuiSessionInfo` | Connections with session IDs, system, client, and description |
 | `POST /session/{s}/sap/vkey` | `GuiFrameWindow.sendVKey` | Body `{"virtualKey": 3, "window": "wnd[0]"}`; `window` is optional |
-| `GET /session/{s}/sap/statusbar` | `GuiStatusbar` (`wnd[0]/sbar`) | Message type, ID, number, and text |
+| `GET /session/{s}/sap/statusbar` | `GuiStatusbar` (`wnd[0]/sbar`) | Message type, ID, number, text, and `messageAsPopup` |
 | `POST /session/{s}/sap/element/at` | `GuiSession.findByPosition` | Body `{"x": 110, "y": 205}`; returns an element reference, `sapId`, `type`, `rect`, and `innerObject`, or `no such element` |
+| `POST /session/{s}/sap/element/{e}/call` | Allow-listed control methods | Body `{"method": "pressToolbarButton", "arguments": ["&REFRESH"]}`; returns the method's result |
+| `POST /session/{s}/sap/element/{e}/property` | Allow-listed control properties | Body `{"name": "selectedRows", "value": "2-4,7"}` |
+
+These routes are SAP extensions with the `sap` path prefix; the W3C WebDriver standard has no commands for SAP shells.
+Standard clients call them with a raw HTTP request or a registered custom command.
+
+### Control methods and properties
+
+The call and property routes accept only the methods and properties listed for the element's control family. The
+family is the SAP type, refined by the subtype for shells. Any other name returns `unsupported operation` before SAP
+GUI is called, so clients cannot reach scripting members that close sessions or change settings.
+
+1. Method names are matched case-insensitively.
+2. Arguments and values are JSON strings, numbers, Booleans, or null; whole numbers are passed as integers. A JSON
+   object or array returns `invalid argument`.
+3. Scalar results are returned as they are, collections as JSON arrays, and controls as element references that
+   every element route accepts. A method without a result returns an empty object.
+4. Argument values and results are not logged, because they can hold business data.
+
+| Control family | Methods |
+| --- | --- |
+| Grid view shell (`GuiShell`, `GridView`) | `clearSelection`, `clickCurrentCell`, `contextMenu`, `doubleClickCurrentCell`, `getCellValue`, `getToolbarButtonId`, `getToolbarButtonText`, `getToolbarButtonType`, `pressToolbarButton`, `pressToolbarContextButton`, `selectAll`, `selectContextMenuItem`, `selectContextMenuItemByText`, `setCurrentCell` |
+| Tree shell (`GuiShell`, `Tree`) | `collapseNode`, `doubleClickItem`, `doubleClickNode`, `expandNode`, `getItemText`, `getNodeChildrenCount`, `getNodeTextByKey`, `getParent`, `getTreeType`, `isFolder`, `selectItem`, `selectNode`; collections: `getAllNodeKeys`, `getColumnNames`, `getColumnTitles`, `getSubNodesCol` |
+| Toolbar shell (`GuiShell`, `Toolbar`) | `getButtonChecked`, `getButtonEnabled`, `getButtonId`, `getButtonText`, `getButtonTooltip`, `getButtonType`, `pressButton`, `pressContextButton`, `selectContextMenuItem` |
+| Text edit shell (`GuiShell`, `TextEdit`) | `getLineText`, `setSelectionIndexes` |
+| Picture shell (`GuiShell`, `Picture`) | `click`, `clickPictureArea`, `doubleClick` |
+| Table control (`GuiTableControl`) | `getCell`, which returns an element reference |
+
+| Control family | Settable properties |
+| --- | --- |
+| Grid view shell | `currentCellColumn`, `currentCellRow`, `firstVisibleRow`, `selectedRows` |
+| Table control, scroll container, user area | `verticalScrollbar.position`, `horizontalScrollbar.position` |
 
 ## Not supported
 
@@ -88,5 +128,5 @@ other virtual key.
 | `/session/{s}/user32/*` | Raw Windows input bypasses SAP GUI Scripting |
 | `GET /scancodes` | Keyboard scan codes are User32-specific |
 | OCR and coordinate locators | Screen-based matching is not a scripting identifier |
-| Grid cells, tree nodes, and toolbar buttons inside shells | Shell internals are methods, not scripting objects |
+| Grid cells, tree nodes, and toolbar buttons as elements | Shell internals are methods, not scripting objects; use the call route |
 | Events and recording | The UIA server has no event contract to mirror |

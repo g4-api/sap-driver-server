@@ -1,0 +1,11 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.TableScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation">
+    <!-- A table control with more rows than lines; the code builds the control, because its cells depend on the line count. -->
+    <StackPanel HorizontalAlignment="Left">
+        <ContentControl x:Name="TableArea" Focusable="False" />
+        <TextBlock x:Name="PositionText" Margin="0,8,0,0" Foreground="#6B7785" sim:ScriptingTree.Id="lblZSIM_TABLE-POSITION" />
+        <TextBlock Margin="0,4,0,0" Foreground="#6B7785" Text="Scroll with the scroll bar, the mouse wheel, Page Up, or Page Down. Only the visible lines have cells." sim:ScriptingTree.Id="lblZSIM_TABLE-HINT" />
+    </StackPanel>
+</UserControl>

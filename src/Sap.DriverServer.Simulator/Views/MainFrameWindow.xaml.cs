@@ -78,13 +78,13 @@ namespace Sap.DriverServer.Simulator.Views
         /// <param name="message">The message.</param>
         public void ShowStatus(StatusMessage message)
         {
-            // Show the text with SAP's color convention: green success, amber warning, red error.
+            // Show the text with SAP's color convention: green success, amber warning, red error and termination.
             ArgumentNullException.ThrowIfNull(argument: message);
 
             StatusText.Text = message.Text;
             StatusText.Foreground = message.MessageType switch
             {
-                StatusMessage.Error => Brushes.DarkRed,
+                StatusMessage.Abort or StatusMessage.Error => Brushes.DarkRed,
                 StatusMessage.Success => Brushes.DarkGreen,
                 StatusMessage.Warning => Brushes.DarkGoldenrod,
                 _ => Brushes.Black
@@ -114,9 +114,15 @@ namespace Sap.DriverServer.Simulator.Views
             return key switch
             {
                 Key.Enter => SimulatedSession.EnterKey,
+                Key.F2 when modifiers == ModifierKeys.None => SimulatedSession.PickKey,
                 Key.F3 when modifiers == ModifierKeys.Shift => SimulatedSession.ExitKey,
                 Key.F3 => SimulatedSession.BackKey,
+                Key.F4 when modifiers == ModifierKeys.None => SimulatedSession.ValueHelpKey,
                 Key.F12 => SimulatedSession.CancelKey,
+                Key.PageDown when modifiers == ModifierKeys.Control => SimulatedSession.LastPageKey,
+                Key.PageDown => SimulatedSession.NextPageKey,
+                Key.PageUp when modifiers == ModifierKeys.Control => SimulatedSession.FirstPageKey,
+                Key.PageUp => SimulatedSession.PreviousPageKey,
                 Key.S when modifiers == ModifierKeys.Control => SimulatedSession.SaveKey,
                 _ => -1
             };

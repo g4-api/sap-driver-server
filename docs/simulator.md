@@ -71,23 +71,148 @@ title bar `titl`, the application toolbar `tbar[1]`, the user area `usr`, and th
 | Screen | Start | Controls in `usr` | Exercises |
 | --- | --- | --- | --- |
 | Logon | Session start, or log off | `txtRSYST-MANDT`, `txtRSYST-BNAME`, `pwdRSYST-BCODE`, `txtRSYST-LANGU` | Send keys, the password rule, Enter |
-| SAP Easy Access | Logon, or `/n` | Tree shell `cntlIMAGE_CONTAINER/shellcont/shell` | Tree shell, `doubleClickNode` |
-| Form | `/nFORM`, or the tree | Text fields, `ctxtSIM-CARRID`, `chkSIM-ACTIVE`, `radSIM-CLASS_*`, `cmbSIM-CURRENCY`, `tabsTABSTRIP`, `btnOPEN_POPUP` | Click per type, set text, clear, combo keys, tabs, output-only field |
-| Popup `wnd[1]` | `btnOPEN_POPUP` | `txtSPOP-TEXTLINE1`, `btnSPOP-OPTION1`, `btnSPOP-OPTION2` | Window switch, blocked `wnd[0]`, popup screenshot |
+| SAP Easy Access | Logon, or `/n` | Tree shell `cntlIMAGE_CONTAINER/shellcont/shell` | Tree shell, `doubleClickNode`; the **Test lab** folder lists the `ZSIM_*` transactions |
+| Form | `/nFORM`, or the tree | Text fields, `ctxtSIM-CARRID`, `chkSIM-ACTIVE`, `radSIM-CLASS_*`, `cmbSIM-CURRENCY`, `tabsTABSTRIP`, `btnOPEN_POPUP` | Click per type, set text, clear, combo keys, tabs, output-only field, F4 help |
+| Confirmation popup `wnd[1]` | `btnOPEN_POPUP` | `txtSPOP-TEXTLINE1`, `btnSPOP-OPTION1`, `btnSPOP-OPTION2` | Window switch, blocked `wnd[0]`, popup screenshot |
 | Grid | `/nGRID`, or the tree | Grid view shell `cntlGRID1/shellcont/shell` with 12 synthetic flights | Inner objects, `GetCellValue`, `SetCurrentCell`, cell framing |
+| Test lab | `/nZSIM_*`, or the tree | See [Test lab](#test-lab) | One area of SAP GUI automation pitfalls per transaction |
 
 The main window takes these virtual keys; keyboard shortcuts and the toolbar buttons send the same keys.
 
 | Key | Name | Effect |
 | ---: | --- | --- |
-| 0 | Enter | Logs on, or runs the command field |
-| 3 | Back (F3) | Returns to SAP Easy Access; from there, logs off |
+| 0 | Enter | Logs on, runs the command field, or checks the screen's entries when the command field is empty |
+| 2 | Pick (F2) | Opens the secondary list of the line under the cursor in `ZSIM_LIST` |
+| 3 | Back (F3) | Returns to SAP Easy Access; from there, logs off; in a secondary list, returns to the basic list |
+| 4 | Input help (F4) | Opens the hit list of the focused field when it has an input help |
 | 11 | Save (Ctrl+S) | Reports a simulated save on the form |
-| 12 | Cancel (F12) | Returns to SAP Easy Access; on the popup, cancels it |
+| 12 | Cancel (F12) | Returns to SAP Easy Access; on a cancelable popup, cancels it |
 | 15 | Exit (Shift+F3) | Same as Back |
+| 80 to 83 | Paging | First, previous, next, and last page of `ZSIM_TABLE` and `ZSIM_LIST` |
 
-Messages in the status bar use the message class `ZSIM` and the types `S`, `W`, and `E`, so a test can tell
-simulator messages from SAP messages.
+Messages use the message class `ZSIM`, so a test can tell simulator messages from SAP messages. Success (`S`),
+warning (`W`), and error (`E`) messages appear in the status bar; information (`I`) and termination (`A`) messages
+appear in a popup. A message shown in a popup stays the status bar's message, with `MessageAsPopup` set.
+
+## Test lab
+
+The test lab transactions each collect the controls and automation pitfalls of one area. Start them with their
+transaction code, such as `/nZSIM_TABLE`, or from the **Test lab** folder in SAP Easy Access. Their data is synthetic
+and deterministic, and it resets whenever the transaction starts again.
+
+The behavior follows the SAP GUI Scripting documentation and scripting experience; it has not been compared with a
+live SAP system. Where the documentation leaves a detail open, such as the exact text of an identifier or a format,
+the simulator makes a choice that real SAP GUI may not share.
+
+| Transaction | Area | Main controls |
+| --- | --- | --- |
+| `ZSIM_FIELDS` | Field attributes | `ctxtZSIM_FIELDS-BUKRS`, `txtZSIM_FIELDS-AMOUNT`, `txtZSIM_FIELDS-BELNR` |
+| `ZSIM_MESSAGES` | Message types and popups | `btnMSG_S` to `btnMSG_A`, `chkMSG_AS_POPUP`, `btnPOPUP_CONFIRM` |
+| `ZSIM_TABS` | Tab strips and subscreens | `tabsTS_MAIN`, `tabsTS_INNER` |
+| `ZSIM_TABLE` | Table control | `tblSAPMZSIM_TABLETC_ITEMS` |
+| `ZSIM_ALV` | ALV grid | `cntlALV_CONTAINER/shellcont/shell` |
+| `ZSIM_TREES` | Tree controls | `cntlTREE_SIMPLE`, `cntlTREE_LIST`, `cntlTREE_COLUMN` |
+| `ZSIM_SHELLS` | Shell controls, boxes, scroll containers | `cntlTOOLBAR`, `cntlSPLITTER`, `boxZSIM_SHELLS-ADDRESS`, `ssubSCROLL_AREA:SAPMZSIM_SHELLS:0200` |
+| `ZSIM_LIST` | Classic lists | `lbl[column,line]` labels |
+| `ZSIM_CHALLENGE` | Timing, state, and identity traps | `btnCHALLENGE_*`, `subCHALLENGE_DETAIL:*`, `ssubCHALLENGE_SCROLL:*` |
+
+### ZSIM_FIELDS
+
+1. `ctxtZSIM_FIELDS-BUKRS` is a required field (`Required = true`); Enter with it empty reports error `050`.
+2. `txtZSIM_FIELDS-AMOUNT` is numeric (`Numerical = true`) and right-aligned; a text value reports error `051`.
+3. `txtZSIM_FIELDS-SHORT` has `MaxLength` 4; a longer text set by a script is cut to four characters.
+4. `txtZSIM_FIELDS-BELNR` is a padded output field: `Text` reads `4711`, while `DisplayedText` keeps the blanks.
+5. `txtZSIM_FIELDS-ERNAM` is output only and `txtZSIM_FIELDS-MONAT` is disabled; both report `Changeable = false`.
+6. `setFocus` on `ctxtZSIM_FIELDS-CARRID` or `ctxtZSIM_FIELDS-BUKRS`, then `sendVKey 4`, opens the hit list in
+   `wnd[1]`. Select a row of `usr/cntlRESULTLIST/shellcont/shell` and press Enter to copy its key into the field.
+7. F4 on a field without an input help reports warning `007`.
+
+### ZSIM_MESSAGES
+
+1. The success, warning, and error buttons report in the status bar, or in a popup when `chkMSG_AS_POPUP` is
+   selected.
+2. The information button always opens a popup; its text is `wnd[1]/usr/txtMESSTXT1`, and `wnd[1]/tbar[0]/btn[0]`
+   continues. A message popup cannot be cancelled with F12.
+3. The termination button opens a popup and ends the transaction when it closes; SAP Easy Access then shows the
+   message.
+
+### ZSIM_TABS
+
+1. Each tab of `tabsTS_MAIN` fills the subscreen area `SUB_MAIN` with its own subscreen, so a field's identifier
+   includes the tab's subscreen, as in `tabpT\01/ssubSUB_MAIN:SAPMZSIM_TABS:0110/txtZSIM_TABS-NOTE`.
+2. The note field exists on two tabs, under two identifiers.
+3. Only the selected tab's content exists; an identifier recorded on another tab fails until that tab is selected.
+4. The third tab nests the tab strip `tabsTS_INNER`.
+
+### ZSIM_TABLE
+
+1. The table control shows 12 lines over 200 rows: `RowCount` is 200 and `VisibleRowCount` is 12.
+2. Cells exist only for the visible lines, as `txtITAB-POSNR[column,line]`; the line counts from the first visible
+   row, so `[0,12]` does not exist.
+3. `verticalScrollbar.position` and the paging keys 80 to 83 scroll the table; the same cell identifier then shows
+   another row. Edits are kept when the table scrolls.
+4. Lines past the last row are empty and not changeable.
+5. `getAbsoluteRow(n).selected` selects a data row, independent of scrolling.
+
+### ZSIM_ALV
+
+1. The grid holds 500 rows but loads only rows that have been in view: `getCellValue` returns an empty string for
+   a row that was never shown, until `firstVisibleRow` scrolls to it.
+2. Toolbar buttons are pressed by function code. `&MB_EXPORT` is a menu button: press it with
+   `pressToolbarContextButton`, then choose `&XXL` or `&PC` with `selectContextMenuItem`.
+3. `contextMenu` opens the cell menu (`&COPY`, `&DETAIL`); a menu stays open until an item is selected.
+4. `&SORT_ASC` and `&SORT_DSC` reorder the rows, so a row index names another flight afterwards.
+5. `selectedRows` accepts ranges such as `2-4,7`.
+6. The flight number column is a hotspot: `clickCurrentCell` raises `&IC1`. A double click opens a detail popup.
+7. Export and copy only report what they would do; they write no files and leave the clipboard unchanged.
+
+### ZSIM_TREES
+
+1. The same hierarchy appears as a simple tree (type 0), a list tree (type 1), and a column tree (type 2).
+2. Node keys are padded to ten characters, as in `"         1"`; the key `"1"` finds nothing.
+3. Folders load their children on the first expansion; before that, a child key is unknown to every member.
+4. List and column trees hold their texts in items: `getItemText(key, "PRICE")` in the column tree, and the item
+   names `1` to `3` in the list tree.
+5. `doubleClickItem` reports the item and sets `selectedItemNode`.
+
+### ZSIM_SHELLS
+
+1. The toolbar control has a plain, a disabled, a check, a button-and-menu, and a menu button. Disabled and
+   menu-only buttons refuse `pressButton`.
+2. The splitter is a shell that contains shells: the text edit is `cntlSPLITTER/shellcont/shell/shellcont[0]/shell`
+   and the picture is `cntlSPLITTER/shellcont/shell/shellcont[1]/shell`.
+3. The box `boxZSIM_SHELLS-ADDRESS` only draws a frame; the fields inside it on screen are its siblings.
+4. The scroll container `ssubSCROLL_AREA:SAPMZSIM_SHELLS:0200` holds 25 fields; most of them report coordinates
+   below its visible area until `verticalScrollbar.position` scrolls them into view.
+
+### ZSIM_LIST
+
+1. The list has no named fields; each output field is a label named by its character position on the page, as in
+   `usr/lbl[10,5]`, with `IsListElement`, `CharLeft`, and `CharTop`.
+2. The paging keys and `usr/verticalScrollbar.position` change what each label identifier shows.
+3. `setFocus` on a data label, then `sendVKey 2`, opens a secondary list; Back returns to the same page.
+
+### ZSIM_CHALLENGE
+
+1. `btnCHALLENGE_DELAYED` appears 2 seconds after the screen opens; a lookup right away finds nothing.
+2. `btnCHALLENGE_BUSY` keeps the session `Busy` for 1.5 seconds and refuses virtual keys meanwhile. The driver waits
+   for the session to be idle before it sends a key.
+3. `btnCHALLENGE_POST` asks for confirmation on some presses only, in a fixed irregular pattern; check for `wnd[1]`
+   after every press.
+4. Two buttons share the text `Select`, so a locator by text finds both.
+5. The mode radio buttons replace the subscreen `subCHALLENGE_DETAIL`, so the value field is
+   `txtCHALLENGE-A_VALUE` in mode A and `ctxtCHALLENGE-B_VALUE` in mode B.
+6. Enter checks the date before the quantity: an invalid date reports error `113` and locks the other fields until
+   it is fixed, and a quantity above 100 reports warning `115` until a second Enter confirms it.
+7. `btnCHALLENGE_HIDDEN` lies below the visible part of a scroll container. Scripting presses it; a click at its
+   coordinates would miss.
+
+### Driver coverage
+
+The end-to-end tests drive the test lab through the driver. Shell methods and properties go through the allow-listed
+`sap/element/{e}/call` and `sap/element/{e}/property` routes; see
+[Control methods and properties](capabilities.md#control-methods-and-properties). Only the session's `Busy` flag is
+read through the inspector's local member invoker, because the session is not an element.
 
 ## Walk through the driver and the inspector
 
@@ -129,12 +254,13 @@ A shell variable wins over `.env`, and `.env` wins over the `Environment` sectio
 
 The tests cover status, logon, OK-code navigation, form interactions, output-only fields, the popup window,
 element-at on a button and a grid cell, page source and XPath, both disabled-scripting scenarios, ambiguous and
-indexed session selection, both inspector sources, and the published driver.
+indexed session selection, both inspector sources, the published driver, and every test lab transaction.
 
 ## Limitations
 
 1. Only the members the driver and the inspector use are implemented; other members report "not exposed" as SAP GUI
    does for absent members.
-2. The simulator does not model server round trips, so `Busy` is always `false`.
-3. Input helps (F4), menus beyond the simulator menu, and message popups are not simulated.
+2. Server round trips are not modeled, except the busy period of `ZSIM_CHALLENGE`; elsewhere `Busy` is `false`.
+3. Menus beyond the simulator menu and the test lab's toolbar and context menus are not simulated.
 4. Overlay and canvas alignment were checked on a display at 100% scaling only.
+5. The test lab follows documented and commonly observed SAP GUI behavior; it was not compared with a live SAP system.

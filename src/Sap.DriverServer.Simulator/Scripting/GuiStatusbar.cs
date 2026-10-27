@@ -9,7 +9,8 @@ namespace Sap.DriverServer.Simulator.Scripting
     /// Simulates SAP's <c>GuiStatusbar</c>: the message line of the main window (<c>sbar</c>).
     /// </summary>
     /// <remarks>
-    /// Simulator messages use the message class <c>ZSIM</c> and the types <c>S</c>, <c>W</c>, and <c>E</c>.
+    /// Simulator messages use the message class <c>ZSIM</c> and the types <c>S</c>, <c>W</c>, <c>E</c>, <c>I</c>, and
+    /// <c>A</c>. A message shown in a popup stays the status bar's message, with <c>MessageAsPopup</c> set.
     /// </remarks>
     [ComVisible(true)]
     public sealed class GuiStatusbar : GuiVComponent
@@ -26,9 +27,9 @@ namespace Sap.DriverServer.Simulator.Scripting
 
         #region *** Properties   ***
         /// <summary>
-        /// Gets a value indicating whether messages are shown as popups; the simulator always uses the status bar.
+        /// Gets a value indicating whether the current message is shown in a popup (<c>wnd[1]</c>).
         /// </summary>
-        public bool MessageAsPopup => !Element.IsVisible;
+        public bool MessageAsPopup => Message.IsPopup;
 
         /// <summary>
         /// Gets the message class, such as <c>ZSIM</c>; empty when no message is shown.
@@ -41,7 +42,7 @@ namespace Sap.DriverServer.Simulator.Scripting
         public string MessageNumber => Message.MessageNumber;
 
         /// <summary>
-        /// Gets the message type: <c>S</c>, <c>W</c>, <c>E</c>, or empty.
+        /// Gets the message type: <c>S</c>, <c>W</c>, <c>E</c>, <c>I</c>, <c>A</c>, or empty.
         /// </summary>
         public string MessageType => Message.MessageType;
 

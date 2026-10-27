@@ -1,0 +1,20 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.MessagesScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation">
+    <!-- One button per message type, a switch that shows S, W, and E messages as popups, and the confirmation popup. -->
+    <StackPanel HorizontalAlignment="Left">
+        <TextBlock FontWeight="SemiBold" Text="Messages" sim:ScriptingTree.Id="lblZSIM_MESSAGES-MESSAGES" />
+        <StackPanel Margin="0,8,0,0" Orientation="Horizontal">
+            <Button Margin="0,0,8,0" Padding="12,3" Content="Success" Tag="S" Click="OnMessageClick" ToolTip="Raises a success message (S)" sim:ScriptingTree.Id="btnMSG_S" />
+            <Button Margin="0,0,8,0" Padding="12,3" Content="Warning" Tag="W" Click="OnMessageClick" ToolTip="Raises a warning message (W)" sim:ScriptingTree.Id="btnMSG_W" />
+            <Button Margin="0,0,8,0" Padding="12,3" Content="Error" Tag="E" Click="OnMessageClick" ToolTip="Raises an error message (E)" sim:ScriptingTree.Id="btnMSG_E" />
+            <Button Margin="0,0,8,0" Padding="12,3" Content="Information" Tag="I" Click="OnMessageClick" ToolTip="Raises an information message (I), always in a popup" sim:ScriptingTree.Id="btnMSG_I" />
+            <Button Padding="12,3" Content="Termination" Tag="A" Click="OnMessageClick" ToolTip="Raises a termination message (A), which ends the transaction" sim:ScriptingTree.Id="btnMSG_A" />
+        </StackPanel>
+        <CheckBox x:Name="AsPopupCheckBox" Margin="0,10,0,0" Content="Show success, warning, and error messages as popups" sim:ScriptingTree.Id="chkMSG_AS_POPUP" />
+
+        <TextBlock Margin="0,20,0,0" FontWeight="SemiBold" Text="Popups" sim:ScriptingTree.Id="lblZSIM_MESSAGES-POPUPS" />
+        <Button Margin="0,8,0,0" Padding="12,3" HorizontalAlignment="Left" Content="Confirmation popup" Click="OnConfirmClick" ToolTip="Opens a confirmation popup (wnd[1])" sim:ScriptingTree.Id="btnPOPUP_CONFIRM" />
+    </StackPanel>
+</UserControl>

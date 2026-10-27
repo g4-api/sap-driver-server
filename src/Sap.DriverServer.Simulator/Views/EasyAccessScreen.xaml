@@ -2,15 +2,10 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation">
-    <!-- The menu tree is a tree shell inside a custom control container, as in SAP Easy Access. -->
+    <!-- The menu tree is a tree shell inside a custom control container, as in SAP Easy Access; the code fills it from the screen catalog. -->
     <Border BorderBrush="#B8C2CC" BorderThickness="1" sim:ScriptingTree.Id="cntlIMAGE_CONTAINER">
         <Border sim:ScriptingTree.Id="shellcont">
-            <TreeView x:Name="MenuTree" BorderThickness="0" MouseDoubleClick="OnMenuTreeDoubleClick" sim:ScriptingTree.Id="shell">
-                <TreeViewItem Header="SAP GUI Simulator" IsExpanded="True" Tag="N1">
-                    <TreeViewItem Header="Form demo (FORM)" Tag="N2" />
-                    <TreeViewItem Header="Grid demo (GRID)" Tag="N3" />
-                </TreeViewItem>
-            </TreeView>
+            <TreeView x:Name="MenuTree" BorderThickness="0" MouseDoubleClick="OnMenuTreeDoubleClick" sim:ScriptingTree.Id="shell" />
         </Border>
     </Border>
 </UserControl>

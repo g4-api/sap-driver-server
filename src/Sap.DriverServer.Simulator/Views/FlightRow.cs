@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Sap.DriverServer.Simulator.Views
@@ -73,16 +74,27 @@ namespace Sap.DriverServer.Simulator.Views
         /// <returns>The rows in display order.</returns>
         public static IList<FlightRow> NewRows()
         {
-            // Derive every value from the row index; nothing is random.
-            var rows = new List<FlightRow>(RowCount);
+            return NewRows(count: RowCount);
+        }
 
-            for (var index = 0; index < RowCount; index++)
+        /// <summary>
+        /// Creates a number of rows: the same values on every run, so tests can assert them.
+        /// </summary>
+        /// <param name="count">The number of rows.</param>
+        /// <returns>The rows in display order.</returns>
+        public static IList<FlightRow> NewRows(int count)
+        {
+            // Derive every value from the row index; nothing is random, and dates run on day by day.
+            var rows = new List<FlightRow>(count);
+            var firstDate = new DateTime(2026, 11, 1, 0, 0, 0, DateTimeKind.Unspecified);
+
+            for (var index = 0; index < count; index++)
             {
                 rows.Add(new FlightRow
                 {
                     Airline = Airlines[index % Airlines.Length],
                     Currency = index % 2 == 0 ? "EUR" : "USD",
-                    FlightDate = string.Create(CultureInfo.InvariantCulture, $"2026-11-{index + 1:00}"),
+                    FlightDate = firstDate.AddDays(index).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                     FlightNumber = string.Create(CultureInfo.InvariantCulture, $"{17 + (index * 4):0000}"),
                     Price = string.Create(CultureInfo.InvariantCulture, $"{120.50m + (index * 37.25m):0.00}")
                 });

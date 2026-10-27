@@ -36,7 +36,7 @@ namespace Sap.DriverServer.Simulator.Views
         private void OnOpenPopupClick(object sender, RoutedEventArgs e)
         {
             // Open wnd[1]; the session refuses a second popup.
-            _session.OpenPopup();
+            _session.OpenPopup(new ConfirmPopup(_session));
         }
         #endregion
     }

@@ -1,0 +1,39 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.AlvScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation"
+             xmlns:views="clr-namespace:Sap.DriverServer.Simulator.Views">
+    <!-- An ALV grid with its own toolbar; toolbar buttons are part of the shell, not scripting children. -->
+    <Border BorderBrush="#B8C2CC" BorderThickness="1" sim:ScriptingTree.Id="cntlALV_CONTAINER">
+        <DockPanel sim:ScriptingTree.Id="shellcont">
+            <StackPanel x:Name="ToolbarPanel" Margin="4" DockPanel.Dock="Top" Orientation="Horizontal" />
+            <views:AlvGrid x:Name="FlightGrid"
+                           AutoGenerateColumns="False"
+                           CanUserAddRows="False"
+                           CanUserDeleteRows="False"
+                           CanUserReorderColumns="False"
+                           CanUserSortColumns="False"
+                           HeadersVisibility="Column"
+                           IsReadOnly="True"
+                           SelectionMode="Extended"
+                           SelectionUnit="FullRow"
+                           MouseDoubleClick="OnFlightGridDoubleClick"
+                           sim:ScriptingTree.Id="shell">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="90" Binding="{Binding Airline}" Header="Airline" SortMemberPath="CARRID" />
+                    <DataGridTextColumn Width="100" Binding="{Binding FlightNumber}" Header="Flight No." SortMemberPath="CONNID">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#0A58CA" />
+                                <Setter Property="TextDecorations" Value="Underline" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Width="110" Binding="{Binding FlightDate}" Header="Date" SortMemberPath="FLDATE" />
+                    <DataGridTextColumn Width="100" Binding="{Binding Price}" Header="Price" SortMemberPath="PRICE" />
+                    <DataGridTextColumn Width="90" Binding="{Binding Currency}" Header="Currency" SortMemberPath="CURRENCY" />
+                </DataGrid.Columns>
+            </views:AlvGrid>
+        </DockPanel>
+    </Border>
+</UserControl>

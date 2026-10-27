@@ -178,6 +178,7 @@ namespace Sap.DriverServer.Domain
 
                 return new SapStatusBarModel
                 {
+                    MessageAsPopup = SapGuiNavigator.GetBoolean(statusBar, propertyName: "MessageAsPopup"),
                     MessageId = SapGuiNavigator.GetString(statusBar, propertyName: "MessageId"),
                     MessageNumber = SapGuiNavigator.GetString(statusBar, propertyName: "MessageNumber"),
                     MessageType = SapGuiNavigator.GetString(statusBar, propertyName: "MessageType"),

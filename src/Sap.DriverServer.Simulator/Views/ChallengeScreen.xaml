@@ -1,0 +1,71 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.ChallengeScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation"
+             Unloaded="OnUnloaded">
+    <!-- Timing, state, and identity traps on one screen; the code drives the timers and the checks. -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0">
+            <TextBlock FontWeight="SemiBold" Text="Timing" sim:ScriptingTree.Id="lblCHALLENGE-TIMING" />
+            <StackPanel Height="30" Margin="0,6,0,0" Orientation="Horizontal">
+                <TextBlock Width="150" VerticalAlignment="Center" Text="Delayed button" sim:ScriptingTree.Id="lblCHALLENGE-DELAYED" />
+                <Button x:Name="DelayedButton" Padding="12,3" Content="Appears after 2 s" Click="OnDelayedClick" Visibility="Collapsed" sim:ScriptingTree.Id="btnCHALLENGE_DELAYED" />
+            </StackPanel>
+            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                <TextBlock Width="150" VerticalAlignment="Center" Text="Long round trip" sim:ScriptingTree.Id="lblCHALLENGE-BUSY" />
+                <Button Padding="12,3" Content="Start long task" Click="OnBusyClick" ToolTip="Keeps the session busy for 1.5 s" sim:ScriptingTree.Id="btnCHALLENGE_BUSY" />
+            </StackPanel>
+            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                <TextBlock Width="150" VerticalAlignment="Center" Text="Sometimes a popup" sim:ScriptingTree.Id="lblCHALLENGE-POST" />
+                <Button Padding="12,3" Content="Post" Click="OnPostClick" ToolTip="Asks for confirmation on some presses" sim:ScriptingTree.Id="btnCHALLENGE_POST" />
+            </StackPanel>
+
+            <TextBlock Margin="0,16,0,0" FontWeight="SemiBold" Text="Duplicates" sim:ScriptingTree.Id="lblCHALLENGE-DUPLICATES" />
+            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                <Button Margin="0,0,8,0" Padding="12,3" Content="Select" Click="OnSelectClick" Tag="A" sim:ScriptingTree.Id="btnCHALLENGE_SELECT_A" />
+                <Button Padding="12,3" Content="Select" Click="OnSelectClick" Tag="B" sim:ScriptingTree.Id="btnCHALLENGE_SELECT_B" />
+            </StackPanel>
+
+            <TextBlock Margin="0,16,0,0" FontWeight="SemiBold" Text="Checks on Enter" sim:ScriptingTree.Id="lblCHALLENGE-CHECKS" />
+            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                <TextBlock Width="150" VerticalAlignment="Center" Text="Delivery date" sim:ScriptingTree.Id="lblCHALLENGE-DATE" />
+                <TextBox x:Name="DateField" Width="120" Text="2026-12-01" ToolTip="YYYY-MM-DD; an invalid date locks the other fields" sim:ScriptingTree.Id="txtCHALLENGE-DATE" />
+            </StackPanel>
+            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                <TextBlock Width="150" VerticalAlignment="Center" Text="Quantity" sim:ScriptingTree.Id="lblCHALLENGE-QTY" />
+                <TextBox x:Name="QuantityField" Width="120" Text="10" TextAlignment="Right" ToolTip="Above 100 needs a second Enter" sim:DynproField.IsNumerical="True" sim:ScriptingTree.Id="txtCHALLENGE-QTY" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1">
+            <TextBlock FontWeight="SemiBold" Text="Choice-dependent fields" sim:ScriptingTree.Id="lblCHALLENGE-MODE" />
+            <StackPanel Margin="0,6,0,0" Orientation="Horizontal">
+                <RadioButton x:Name="ModeA" Margin="0,0,16,0" Checked="OnModeChecked" Content="Mode A" GroupName="ChallengeMode" IsChecked="True" sim:ScriptingTree.Id="radCHALLENGE-MODE_A" />
+                <RadioButton x:Name="ModeB" Checked="OnModeChecked" Content="Mode B" GroupName="ChallengeMode" sim:ScriptingTree.Id="radCHALLENGE-MODE_B" />
+            </StackPanel>
+            <StackPanel x:Name="DetailA" Height="30" Margin="0,6,0,0" Orientation="Horizontal" sim:ScriptingTree.Id="subCHALLENGE_DETAIL:SAPMZSIM_CHALLENGE:0310">
+                <TextBlock Width="120" VerticalAlignment="Center" Text="Value A" sim:ScriptingTree.Id="lblCHALLENGE-A_VALUE" />
+                <TextBox x:Name="AlphaField" Width="160" Text="Alpha" sim:ScriptingTree.Id="txtCHALLENGE-A_VALUE" />
+            </StackPanel>
+            <StackPanel x:Name="DetailB" Height="30" Margin="0,6,0,0" Orientation="Horizontal" Visibility="Collapsed" sim:ScriptingTree.Id="subCHALLENGE_DETAIL:SAPMZSIM_CHALLENGE:0320">
+                <TextBlock Width="120" VerticalAlignment="Center" Text="Value B" sim:ScriptingTree.Id="lblCHALLENGE-B_VALUE" />
+                <TextBox x:Name="BetaField" Width="160" Text="Beta" sim:ScriptingTree.Id="ctxtCHALLENGE-B_VALUE" />
+            </StackPanel>
+
+            <TextBlock Margin="0,16,0,0" FontWeight="SemiBold" Text="Off-screen control" sim:ScriptingTree.Id="lblCHALLENGE-OFFSCREEN" />
+            <ScrollViewer x:Name="HiddenArea" Height="90" Margin="0,6,0,0" BorderBrush="#B8C2CC" BorderThickness="1" VerticalScrollBarVisibility="Auto" sim:ScriptingTree.Id="ssubCHALLENGE_SCROLL:SAPMZSIM_CHALLENGE:0330">
+                <StackPanel Margin="6">
+                    <TextBlock Height="40" Text="Scroll down for the hidden action." />
+                    <TextBlock Height="40" Text="Keep scrolling." />
+                    <TextBlock Height="40" Text="Almost there." />
+                    <Button Padding="12,3" HorizontalAlignment="Left" Content="Hidden action" Click="OnHiddenClick" sim:ScriptingTree.Id="btnCHALLENGE_HIDDEN" />
+                </StackPanel>
+            </ScrollViewer>
+        </StackPanel>
+    </Grid>
+</UserControl>

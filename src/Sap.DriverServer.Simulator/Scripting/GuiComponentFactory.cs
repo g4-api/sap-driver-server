@@ -14,7 +14,8 @@ namespace Sap.DriverServer.Simulator.Scripting
     /// <remarks>
     /// The prefixes are SAP GUI's, such as <c>txt</c> for <c>GuiTextField</c> and <c>btn</c> for <c>GuiButton</c>.
     /// Longer prefixes are listed before shorter ones that start the same way, such as <c>shellcont</c> before
-    /// <c>shell</c>. A <c>shell</c> element is a grid view when it is a data grid and a tree otherwise.
+    /// <c>shell</c>. A <c>shell</c> element's type comes from its WPF element: a grid view, a text edit, a toolbar,
+    /// a picture, a splitter, or a tree.
     /// </remarks>
     internal static class GuiComponentFactory
     {
@@ -34,12 +35,15 @@ namespace Sap.DriverServer.Simulator.Scripting
             ("cmb", i => new GuiComboBox(i)),
             ("lbl", i => new GuiLabel(i)),
             ("tabs", i => new GuiTabStrip(i)),
+            ("tbl", i => new GuiTableControl(i)),
             ("tabp", i => new GuiTab(i)),
             ("tbar", i => new GuiToolbar(i)),
             ("titl", i => new GuiTitlebar(i)),
             ("usr", i => new GuiUserArea(i)),
             ("sbar", i => new GuiStatusbar(i)),
-            ("ssub", i => new GuiSimpleContainer(i)),
+            ("ssub", i => new GuiScrollContainer(i)),
+            ("sub", i => new GuiSimpleContainer(i)),
+            ("box", i => new GuiBox(i)),
             ("cntl", i => new GuiCustomControl(i)),
             ("mbar", i => new GuiMenubar(i)),
             ("menu", i => new GuiMenu(i))
@@ -87,10 +91,18 @@ namespace Sap.DriverServer.Simulator.Scripting
             return frame.WindowIndex == 0 ? new GuiMainWindow(frame) : new GuiModalWindow(frame);
         }
 
-        // Creates a shell: a grid view over a data grid, a tree over anything else.
+        // Creates a shell by its WPF element: grid view, text edit, toolbar, picture, splitter, or tree.
         private static GuiVComponent NewShell(FrameworkElement element)
         {
-            return element is DataGrid ? new GuiGridView(element) : new GuiTree(element);
+            return element switch
+            {
+                DataGrid => new GuiGridView(element),
+                TextBox => new GuiTextedit(element),
+                ShellToolbar => new GuiToolbarControl(element),
+                PictureHost => new GuiPicture(element),
+                SplitterHost => new GuiSplit(element),
+                _ => new GuiTree(element)
+            };
         }
         #endregion
     }

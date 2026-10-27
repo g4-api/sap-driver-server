@@ -3,7 +3,6 @@
                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                    xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation"
                    xmlns:views="clr-namespace:Sap.DriverServer.Simulator.Views"
-                   Title="Confirmation - SAP GUI Simulator (test double)"
                    ResizeMode="NoResize"
                    ShowInTaskbar="False"
                    SizeToContent="WidthAndHeight"
@@ -11,13 +10,15 @@
                    PreviewKeyDown="OnPreviewKeyDown">
     <!-- The root grid is the scripting geometry of wnd[1]; the canvas above it holds Visualize frames. -->
     <Grid x:Name="RootGrid" Background="White">
-        <StackPanel Margin="16" sim:ScriptingTree.Id="usr">
-            <TextBox Width="340" BorderThickness="0" IsReadOnly="True" Text="Do you want to continue?" sim:ScriptingTree.Id="txtSPOP-TEXTLINE1" />
-            <StackPanel Margin="0,16,0,0" HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button Width="80" Margin="0,0,8,0" Content="Yes" Click="OnYesClick" sim:ScriptingTree.Id="btnSPOP-OPTION1" />
-                <Button Width="80" Content="No" Click="OnNoClick" sim:ScriptingTree.Id="btnSPOP-OPTION2" />
+        <!-- SAP dialog boxes show their toolbar below the user area; the content marks its own usr area. -->
+        <DockPanel>
+            <StackPanel x:Name="Toolbar" Margin="16,0,16,12" DockPanel.Dock="Bottom" Orientation="Horizontal" sim:ScriptingTree.Id="tbar[0]">
+                <Button x:Name="ConfirmButton" MinWidth="80" Margin="0,0,8,0" Padding="10,2" Click="OnConfirmClick" ToolTip="Enter (Enter)" sim:ScriptingTree.Id="btn[0]" />
+                <Button x:Name="CancelButton" MinWidth="80" Padding="10,2" Content="Cancel" Click="OnCancelClick" ToolTip="Cancel (F12)" sim:ScriptingTree.Id="btn[12]" />
             </StackPanel>
-        </StackPanel>
+
+            <ContentControl x:Name="PopupContent" Focusable="False" />
+        </DockPanel>
 
         <Canvas x:Name="Highlights" IsHitTestVisible="False" />
     </Grid>

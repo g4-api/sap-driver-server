@@ -4,7 +4,7 @@ using System.Windows;
 namespace Sap.DriverServer.Simulator.Scripting
 {
     /// <summary>
-    /// Simulates SAP's <c>GuiSimpleContainer</c>: a subscreen container (<c>ssub</c>), such as the content of a tab.
+    /// Simulates SAP's <c>GuiSimpleContainer</c>: a subscreen container without scroll bars (<c>sub</c>).
     /// </summary>
     [ComVisible(true)]
     public sealed class GuiSimpleContainer : GuiVContainer
