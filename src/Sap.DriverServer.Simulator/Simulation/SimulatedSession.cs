@@ -119,6 +119,7 @@ namespace Sap.DriverServer.Simulator.Simulation
 
             _system = system;
             Index = index;
+            Recorder = new SessionRecorder(session: this);
         }
         #endregion
 
@@ -151,6 +152,11 @@ namespace Sap.DriverServer.Simulator.Simulation
         /// for its duration, and virtual keys are refused meanwhile, so clients see SAP's <c>Busy</c> behavior.
         /// </remarks>
         public bool IsBusy { get; private set; }
+
+        /// <summary>
+        /// Gets the recorder that raises the session's <c>Change</c> events while it records.
+        /// </summary>
+        public SessionRecorder Recorder { get; }
 
         /// <summary>
         /// Gets the transaction of the current screen, one of the <see cref="ScreenCatalog"/> constants.
@@ -258,6 +264,7 @@ namespace Sap.DriverServer.Simulator.Simulation
                 Top = 60 + (Index * 48)
             };
             _mainWindow.Closed += (_, _) => OnMainWindowClosed();
+            Recorder.Attach(_mainWindow);
             Navigate(ScreenCatalog.Logon);
             _mainWindow.Show();
         }
@@ -294,6 +301,7 @@ namespace Sap.DriverServer.Simulator.Simulation
                 Owner = _mainWindow
             };
             _popup.Closed += (_, _) => OnPopupClosed();
+            Recorder.Attach(_popup);
             _popup.Show();
         }
 
@@ -319,9 +327,14 @@ namespace Sap.DriverServer.Simulator.Simulation
                     throw new SimulatorException("The window wnd[0] is blocked while the popup wnd[1] is open.");
                 }
 
+                // Report the key to recording subscribers before the popup acts on it.
+                Recorder.RecordVirtualKey(_popup, key);
                 SendPopupKey(key);
                 return;
             }
+
+            // Report the key to recording subscribers before the screen acts on it.
+            Recorder.RecordVirtualKey(_mainWindow, key);
 
             // Let the screen take its own keys first, so a list can use Back to leave a secondary list.
             if (_mainWindow.UserAreaContent is IVirtualKeyScreen screen && screen.TestVirtualKey(key))

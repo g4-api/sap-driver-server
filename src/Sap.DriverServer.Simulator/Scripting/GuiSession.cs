@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Windows;
 
 using Sap.DriverServer.Simulator.Simulation;
@@ -18,9 +19,13 @@ namespace Sap.DriverServer.Simulator.Scripting
     /// under the point and whose second item describes an inner object, such as a grid cell, or is empty. Windows are
     /// tested top-most first, so the popup wins over the main window. This is the simulator's model of SAP's result;
     /// it has not been compared with a real SAP GUI.
+    /// <para>
+    /// The session raises <c>Change</c> through one COM connection point while <c>Record</c> is true; see
+    /// <see cref="SessionRecorder"/> for what is reported.
+    /// </para>
     /// </remarks>
     [ComVisible(true)]
-    public sealed class GuiSession : GuiComponent
+    public sealed class GuiSession : GuiComponent, IConnectionPointContainer
     {
         #region *** Constants    ***
         // Lists the modifier prefixes of the four function-key groups: 1-12, 13-24, 25-36, and 37-48.
@@ -78,11 +83,39 @@ namespace Sap.DriverServer.Simulator.Scripting
         /// <inheritdoc />
         public override object Parent => new GuiConnection(SimulatedSystem);
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the session records, which makes it raise <c>Change</c> events.
+        /// </summary>
+        /// <exception cref="SimulatorException">Recording is switched on while the scenario disables it.</exception>
+        public bool Record
+        {
+            get => _session.Recorder.IsRecording;
+            set => _session.Recorder.SetRecording(value);
+        }
+
         /// <inheritdoc />
         internal override string Segment => string.Create(CultureInfo.InvariantCulture, $"ses[{_session.Index}]");
         #endregion
 
         #region *** Methods      ***
+        /// <inheritdoc />
+        void IConnectionPointContainer.EnumConnectionPoints(out IEnumConnectionPoints ppEnum)
+        {
+            ppEnum = new GuiSessionConnectionPoint.Enumerator(new GuiSessionConnectionPoint(_session, container: this));
+        }
+
+        /// <inheritdoc />
+        void IConnectionPointContainer.FindConnectionPoint(ref Guid riid, out IConnectionPoint ppCP)
+        {
+            // Offer only the session event interface; other identifiers report CONNECT_E_NOCONNECTION.
+            if (riid != GuiSessionConnectionPoint.EventInterfaceId)
+            {
+                throw new COMException("The session has no connection point for this interface.", unchecked((int)0x80040200));
+            }
+
+            ppCP = new GuiSessionConnectionPoint(_session, container: this);
+        }
+
         /// <summary>
         /// Resolves an absolute identifier, or one relative to the session, such as <c>wnd[0]/sbar</c>.
         /// </summary>

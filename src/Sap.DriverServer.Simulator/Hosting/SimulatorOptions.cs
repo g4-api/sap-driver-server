@@ -25,6 +25,9 @@ namespace Sap.DriverServer.Simulator.Hosting
         // Names the switch that suppresses message boxes, so unattended runs never wait for input.
         private const string QuietSwitch = "--quiet";
 
+        // Names the switch that makes sessions refuse recording mode, like a system that disables recording.
+        private const string RecordingDisabledSwitch = "--recording-disabled";
+
         // Names the switch that makes GetScriptingEngine refuse, like SAP GUI with scripting disabled.
         private const string ScriptingDisabledSwitch = "--scripting-disabled";
 
@@ -42,6 +45,11 @@ namespace Sap.DriverServer.Simulator.Hosting
         /// Gets a value indicating whether failures are reported only through the exit code, without message boxes.
         /// </summary>
         public bool IsQuiet { get; init; }
+
+        /// <summary>
+        /// Gets a value indicating whether sessions refuse recording mode, as with <c>sapgui/user_scripting_disable_recording</c>.
+        /// </summary>
+        public bool IsRecordingDisabled { get; init; }
 
         /// <summary>
         /// Gets a value indicating whether the scripting engine is refused, as when SAP GUI Scripting is disabled.
@@ -67,6 +75,7 @@ namespace Sap.DriverServer.Simulator.Hosting
             arguments ??= [];
             var isDisabledByServer = false;
             var isQuiet = false;
+            var isRecordingDisabled = false;
             var isScriptingDisabled = false;
             var sessions = 1;
 
@@ -80,6 +89,9 @@ namespace Sap.DriverServer.Simulator.Hosting
                         break;
                     case QuietSwitch:
                         isQuiet = true;
+                        break;
+                    case RecordingDisabledSwitch:
+                        isRecordingDisabled = true;
                         break;
                     case ScriptingDisabledSwitch:
                         isScriptingDisabled = true;
@@ -97,6 +109,7 @@ namespace Sap.DriverServer.Simulator.Hosting
             {
                 IsDisabledByServer = isDisabledByServer,
                 IsQuiet = isQuiet,
+                IsRecordingDisabled = isRecordingDisabled,
                 IsScriptingDisabled = isScriptingDisabled,
                 Sessions = sessions
             };

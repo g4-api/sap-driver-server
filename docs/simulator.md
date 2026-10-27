@@ -53,6 +53,7 @@ inspector use. Where SAP's documentation leaves a detail open, the simulator mak
 | `--sessions <n>` | Opens 1 to 4 sessions on the connection; the default is 1 |
 | `--scripting-disabled` | `GetScriptingEngine` returns nothing, as when SAP GUI Scripting is disabled on the client |
 | `--disabled-by-server` | The connection reports `DisabledByServer` and hides its sessions |
+| `--recording-disabled` | Sessions refuse `Record = true`, as on a system with `sapgui/user_scripting_disable_recording` |
 | `--quiet` | Reports startup failures only through the exit code, without message boxes |
 
 | Exit code | Meaning |
@@ -213,6 +214,26 @@ The end-to-end tests drive the test lab through the driver. Shell methods and pr
 `sap/element/{e}/call` and `sap/element/{e}/property` routes; see
 [Control methods and properties](capabilities.md#control-methods-and-properties). Only the session's `Busy` flag is
 read through the inspector's local member invoker, because the session is not an element.
+
+## Recording events
+
+Sessions raise `GuiSession.Change` through a COM connection point while `Record` is `true`, so the G4 SAP recorder
+can be tested without SAP GUI. Subscribers are called through `IDispatch.Invoke` with the arguments session,
+component, and command array; each command is an array of a kind (`SP` sets a property, `M` calls a method), a member
+name, and arguments.
+
+| User or script action | Reported command |
+| --- | --- |
+| Button press | `M press` on the button |
+| Radio button selection | `M select` on the radio button |
+| Check box click | `SP selected` with the new state |
+| Field text change | `SP text` with the field's scripting text, reported before the submitting action |
+| Virtual key, such as Enter | `M sendVKey` with the key, on the window |
+
+1. Field text is reported when the screen is submitted, not per keystroke, and password fields report empty text.
+2. Tab selections, shell actions, and menu selections are not reported.
+3. The dispatch identifier (`1`), the event interface identifier, and the command codes are the simulator's model of
+   SAP GUI's event; they have not been compared with a real SAP GUI.
 
 ## Walk through the driver and the inspector
 
