@@ -10,18 +10,19 @@ credentials.
 ## Contents
 
 1. [Prerequisites](#prerequisites)
-2. [Build and run](#build-and-run)
-3. [Connect from G4 or Selenium](#connect-from-g4-or-selenium)
-4. [Session selection](#session-selection)
-5. [Locating controls](#locating-controls)
-6. [Capabilities at a glance](#capabilities-at-a-glance)
-7. [Differences from the UIA driver server](#differences-from-the-uia-driver-server)
-8. [Configuration](#configuration)
-9. [Architecture](#architecture)
-10. [SAP GUI Inspector](#sap-gui-inspector)
-11. [SAP GUI simulator](#sap-gui-simulator)
-12. [Tests](#tests)
-13. [Further reading](#further-reading)
+2. [Download a release](#download-a-release)
+3. [Build and run](#build-and-run)
+4. [Connect from G4 or Selenium](#connect-from-g4-or-selenium)
+5. [Session selection](#session-selection)
+6. [Locating controls](#locating-controls)
+7. [Capabilities at a glance](#capabilities-at-a-glance)
+8. [Differences from the UIA driver server](#differences-from-the-uia-driver-server)
+9. [Configuration](#configuration)
+10. [Architecture](#architecture)
+11. [SAP GUI Inspector](#sap-gui-inspector)
+12. [SAP GUI simulator](#sap-gui-simulator)
+13. [Tests](#tests)
+14. [Further reading](#further-reading)
 
 ## Prerequisites
 
@@ -36,12 +37,27 @@ registration, or SDK: it finds SAP Logon in the Windows running object table at 
    `sapgui/user_scripting = TRUE`; check it in transaction `RZ11`.
 5. Make sure the user has authorization object `S_SCR` when the system restricts scripting per user
    (`sapgui/user_scripting_per_user = TRUE`).
-6. Install the .NET 10 SDK to build. Published builds are self-contained single files and need no .NET runtime.
+6. Install the .NET 10 SDK to build. Builds from `scripts\publish.ps1` are self-contained and need no .NET runtime;
+   the GitHub release zips are framework-dependent and need the .NET 10 runtime.
 7. Run the driver server as the same Windows user, in the same desktop session and at the same integrity level
    (elevated or not) as SAP Logon. Windows shows a process only the running object table entries of its own user
    and integrity level, so a mismatch reports `sapGuiNotRunning` or `accessDenied`.
 8. Use either process bitness. The driver reads SAP Logon's `SAPGUI` entry from the running object table directly,
    not through the `SapROTWr` component, so a 64-bit driver works with 32-bit and 64-bit SAP GUI.
+
+## Download a release
+
+Every push to `main` that changes more than documentation runs the release pipeline: it runs the unit tests,
+publishes the driver and the inspector, and creates a GitHub release tagged `v<yyyy.MM.dd.run>`. A preview release,
+tagged `v<yyyy.MM.dd.run>-preview` and marked as a pre-release, is built on demand from the Actions tab.
+
+1. Open the [releases page](https://github.com/g4-api/sap-driver-server/releases).
+2. Download `Sap.DriverServer.<version>-win-x64.zip` for the driver server and
+   `Sap.DriverServer.Inspector.<version>-win-x64.zip` for the SAP GUI Inspector.
+3. Install the [.NET 10 runtime](https://dotnet.microsoft.com/download/dotnet/10.0) on the target machine; the zips
+   are framework-dependent. The inspector needs the .NET Desktop Runtime.
+4. Extract a zip and run `Sap.DriverServer.exe` or `Sap.DriverServer.Inspector.exe`. The driver console shows the
+   release version in its logo.
 
 ## Build and run
 
