@@ -1,4 +1,4 @@
-<Window x:Class="Sap.DriverServer.Inspector.Views.MainWindow"
+﻿<Window x:Class="Sap.DriverServer.Inspector.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:Sap.DriverServer.Inspector.ViewModels"
@@ -23,6 +23,7 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="VisibleWhenTrue" />
+        <views:CanvasTagLeftConverter x:Key="CanvasTagLeft" />
         <views:CollapsedWhenTrueConverter x:Key="CollapsedWhenTrue" />
 
         <!-- Every tab scrolls on its own and keeps the same inner spacing. -->
@@ -48,7 +49,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <ContentControl Style="{StaticResource G4BrandMark}" />
-                    <TextBlock Margin="12,0,0,0" FontSize="16" FontWeight="SemiBold" Text="SAP GUI Inspector" VerticalAlignment="Center" />
+                    <TextBlock Margin="12,0,0,0" FontFamily="{StaticResource G4DisplayFont}" FontSize="16" FontWeight="SemiBold" Text="SAP GUI Inspector" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -77,30 +78,45 @@
                                   MinWidth="150"
                                   ToolTip="Pause or resume live inspection. The shortcut works system-wide, also while SAP GUI has focus.">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="12">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock" BasedOn="{StaticResource G4Icon}">
-                                        <Setter Property="Text" Value="&#xE769;" />
+                            <ContentControl>
+                                <ContentControl.Style>
+                                    <Style TargetType="ContentControl" BasedOn="{StaticResource G4SvgIcon}">
+                                        <Setter Property="Tag" Value="{StaticResource G4IconPause}" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsPaused}" Value="True">
-                                                <Setter Property="Text" Value="&#xE768;" />
+                                                <Setter Property="Tag" Value="{StaticResource G4IconPlay}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                            <TextBlock Margin="8,0,0,0" VerticalAlignment="Center">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Text" Value="Pause" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsPaused}" Value="True">
-                                                <Setter Property="Text" Value="Resume" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                </ContentControl.Style>
+                            </ContentControl>
+                            <!-- Both words share one cell and only the visible one changes, so the hidden word keeps
+                                 the width of the longer one and the button never resizes when it toggles. -->
+                            <Grid Margin="8,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Pause">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                                    <Setter Property="Visibility" Value="Hidden" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <TextBlock Text="Resume">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Hidden" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPaused}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
                             <TextBlock Margin="10,0,0,0" FontSize="12" FontWeight="Normal" Opacity="0.7" Text="Shift+F5" VerticalAlignment="Center" />
                         </StackPanel>
                     </ToggleButton>
@@ -145,14 +161,19 @@
                         <StackPanel Orientation="Horizontal">
                             <Button AutomationProperties.Name="Create session" Click="OnCreateSessionClick" Style="{StaticResource G4PrimaryButton}" ToolTip="Connect to a SAP driver server, like Appium Inspector">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock FontSize="12" Style="{StaticResource G4Icon}" Text="&#xE710;" />
+                                    <ContentControl Style="{StaticResource G4SvgIcon}" Tag="{StaticResource G4IconAdd}" />
                                     <TextBlock Margin="8,0,0,0" Text="Create session" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
                             <Button Margin="8,0,0,0"
+                                    AutomationProperties.Name="Disconnect"
                                     Command="{Binding DisconnectCommand}"
-                                    Content="Disconnect"
-                                    ToolTip="Leave the driver session; sessions the inspector created are deleted" />
+                                    ToolTip="Leave the driver session; sessions the inspector created are deleted">
+                                <StackPanel Orientation="Horizontal">
+                                    <ContentControl Style="{StaticResource G4SvgIcon}" Tag="{StaticResource G4IconStop}" />
+                                    <TextBlock Margin="8,0,0,0" Text="Disconnect" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </DockPanel>
                     <Border Style="{StaticResource G4Divider}" Margin="0,20,0,12" />
@@ -160,14 +181,14 @@
                         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
                             <Button AutomationProperties.Name="Refresh tree"
                                     Command="{Binding RefreshCommand}"
-                                    Content="&#xE72C;"
+                                    Content="{StaticResource G4IconRefresh}"
                                     Margin="0,0,8,0"
-                                    Style="{StaticResource G4IconButton}"
+                                    Style="{StaticResource G4SvgIconButton}"
                                     ToolTip="Reload the tree from the selected source" />
-                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Parent" CommandParameter="{x:Static services:InspectorNavigation.Parent}" Content="&#xE74A;" Style="{StaticResource G4IconButton}" ToolTip="Parent (Ctrl+Shift+F6)" />
-                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="First child" CommandParameter="{x:Static services:InspectorNavigation.FirstChild}" Content="&#xE74B;" Style="{StaticResource G4IconButton}" ToolTip="First child (Ctrl+Shift+F7); last child: Ctrl+Shift+F9" />
-                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Previous sibling" CommandParameter="{x:Static services:InspectorNavigation.PreviousSibling}" Content="&#xE72B;" Style="{StaticResource G4IconButton}" ToolTip="Previous sibling (Ctrl+Shift+F5)" />
-                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Next sibling" CommandParameter="{x:Static services:InspectorNavigation.NextSibling}" Content="&#xE72A;" Style="{StaticResource G4IconButton}" ToolTip="Next sibling (Ctrl+Shift+F8)" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Parent" CommandParameter="{x:Static services:InspectorNavigation.Parent}" Content="{StaticResource G4IconArrowUp}" Style="{StaticResource G4SvgIconButton}" ToolTip="Parent (Ctrl+Shift+F6)" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="First child" CommandParameter="{x:Static services:InspectorNavigation.FirstChild}" Content="{StaticResource G4IconArrowDown}" Style="{StaticResource G4SvgIconButton}" ToolTip="First child (Ctrl+Shift+F7); last child: Ctrl+Shift+F9" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Previous sibling" CommandParameter="{x:Static services:InspectorNavigation.PreviousSibling}" Content="{StaticResource G4IconArrowLeft}" Style="{StaticResource G4SvgIconButton}" ToolTip="Previous sibling (Ctrl+Shift+F5)" />
+                            <Button Command="{Binding NavigateCommand}" AutomationProperties.Name="Next sibling" CommandParameter="{x:Static services:InspectorNavigation.NextSibling}" Content="{StaticResource G4IconArrowRight}" Style="{StaticResource G4SvgIconButton}" ToolTip="Next sibling (Ctrl+Shift+F8)" />
                         </StackPanel>
                         <TextBlock Margin="0" Style="{StaticResource G4SectionHeader}" Text="Tree" VerticalAlignment="Center" />
                     </DockPanel>
@@ -195,9 +216,13 @@
                     </TextBlock>
 
                     <!-- Live tree: application, connections, sessions, windows, and controls, loaded on demand. -->
-                    <TreeView x:Name="LiveTree" ItemsSource="{Binding RootNodes}">
+                    <!-- No horizontal scrolling: rows fit the pane width, and a long row ends in an ellipsis. -->
+                    <TreeView x:Name="LiveTree" ItemsSource="{Binding RootNodes}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <TreeView.ItemContainerStyle>
                             <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                                <!-- Screen readers announce the row text, such as GuiButton btn "Save", not the view model type. -->
+                                <Setter Property="AutomationProperties.Name" Value="{Binding Display}" />
+                                <Setter Property="AutomationProperties.HelpText" Value="{Binding Id}" />
                                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                                 <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                                 <EventSetter Event="Selected" Handler="OnTreeItemSelected" />
@@ -205,7 +230,15 @@
                         </TreeView.ItemContainerStyle>
                         <TreeView.ItemTemplate>
                             <HierarchicalDataTemplate DataType="{x:Type vm:TreeNodeViewModel}" ItemsSource="{Binding Children}">
-                                <TextBlock Text="{Binding Display}" ToolTip="{Binding Id}" />
+                                <!-- The tool tip carries the full row text, which the ellipsis may cut, and the scripting id. -->
+                                <TextBlock Text="{Binding Display}" TextTrimming="CharacterEllipsis">
+                                    <TextBlock.ToolTip>
+                                        <StackPanel>
+                                            <TextBlock FontWeight="SemiBold" Text="{Binding Display}" />
+                                            <TextBlock Margin="0,4,0,0" FontFamily="{StaticResource G4MonoFont}" FontSize="12" Text="{Binding Id}" />
+                                        </StackPanel>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
                             </HierarchicalDataTemplate>
                         </TreeView.ItemTemplate>
                     </TreeView>
@@ -220,7 +253,7 @@
                 <DockPanel DockPanel.Dock="Top" Margin="0,0,0,12">
                     <Button AutomationProperties.Name="Screenshot" Command="{Binding RefreshScreenCommand}" DockPanel.Dock="Right" ToolTip="Capture the session's current window again">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="12" Style="{StaticResource G4Icon}" Text="&#xE72C;" />
+                            <ContentControl Style="{StaticResource G4SvgIcon}" Tag="{StaticResource G4IconRefresh}" />
                             <TextBlock Margin="8,0,0,0" Text="Screenshot" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
@@ -231,11 +264,13 @@
                 </DockPanel>
                 <Border Padding="8" Style="{StaticResource G4Card}" VerticalAlignment="Top">
                     <Viewbox Stretch="Uniform" StretchDirection="DownOnly" VerticalAlignment="Top">
+                        <!-- LayoutUpdated reports how far the Viewbox shrinks the screenshot, so tags and frame lines keep their on-screen size. -->
                         <Grid x:Name="ScreenSurface"
                               Width="{Binding Screen.ImageWidth}"
                               Height="{Binding Screen.ImageHeight}"
                               Background="Transparent"
                               Cursor="Cross"
+                              LayoutUpdated="OnScreenSurfaceLayoutUpdated"
                               MouseLeftButtonUp="OnScreenMouseLeftButtonUp"
                               MouseMove="OnScreenMouseMove">
                             <Image Source="{Binding Screen.Image}" Stretch="Fill" />
@@ -245,25 +280,41 @@
                                         <Canvas />
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemContainerStyle>
-                                    <Style TargetType="ContentPresenter">
-                                        <Setter Property="Canvas.Left" Value="{Binding X}" />
-                                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
-                                    </Style>
-                                </ItemsControl.ItemContainerStyle>
                                 <ItemsControl.ItemTemplate>
+                                    <!-- Like the desktop overlay: the frame just outside the control and the tag outside the
+                                         frame (above, below at the top edge, inside only when neither fits). The tag and the
+                                         frame line are counter-scaled by TagScale, so they keep their size when the screenshot
+                                         is shrunk, and the tag is kept inside the screenshot horizontally. -->
                                     <DataTemplate DataType="{x:Type vm:CanvasHighlight}">
-                                        <Border x:Name="Frame" Width="{Binding Width}" Height="{Binding Height}" BorderBrush="{StaticResource G4AccentBrush}" BorderThickness="2">
+                                        <Canvas>
+                                            <Grid Canvas.Left="{Binding X}" Canvas.Top="{Binding Y}" Width="{Binding Width}" Height="{Binding Height}">
+                                                <Border x:Name="Frame" Margin="{Binding FrameOffset}" BorderBrush="{StaticResource G4AccentBrush}" BorderThickness="{Binding FrameThickness}" />
+                                            </Grid>
                                             <TextBlock x:Name="Tag"
+                                                       Canvas.Top="{Binding TagY}"
                                                        Background="{StaticResource G4AccentBrush}"
                                                        FontSize="11"
                                                        FontWeight="SemiBold"
                                                        Foreground="{StaticResource G4TextInverseBrush}"
-                                                       HorizontalAlignment="Left"
-                                                       Padding="4,1"
+                                                       Height="18"
+                                                       MaxWidth="{Binding DataContext.Screen.TagMaxWidth, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                       Padding="4,2"
                                                        Text="{Binding Label}"
-                                                       VerticalAlignment="Top" />
-                                        </Border>
+                                                       TextTrimming="CharacterEllipsis">
+                                                <Canvas.Left>
+                                                    <MultiBinding Converter="{StaticResource CanvasTagLeft}">
+                                                        <Binding Path="X" />
+                                                        <Binding Path="FrameThickness" />
+                                                        <Binding Path="DataContext.Screen.ImageWidth" RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                                                        <Binding Path="ActualWidth" RelativeSource="{RelativeSource Self}" />
+                                                        <Binding Path="TagScale" />
+                                                    </MultiBinding>
+                                                </Canvas.Left>
+                                                <TextBlock.LayoutTransform>
+                                                    <ScaleTransform ScaleX="{Binding TagScale}" ScaleY="{Binding TagScale}" />
+                                                </TextBlock.LayoutTransform>
+                                            </TextBlock>
+                                        </Canvas>
                                         <DataTemplate.Triggers>
                                             <DataTrigger Binding="{Binding IsMatch}" Value="True">
                                                 <Setter TargetName="Frame" Property="BorderBrush" Value="{StaticResource G4WarningBrush}" />
@@ -298,7 +349,7 @@
                                 ToolTip="Copy the full scripting id"
                                 VerticalAlignment="Top">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Style="{StaticResource G4Icon}" Text="&#xE8C8;" />
+                                <ContentControl Style="{StaticResource G4SvgIcon}" Tag="{StaticResource G4IconCopy}" />
                                 <TextBlock Margin="8,0,0,0" Text="Copy id" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
@@ -363,10 +414,10 @@
                                                     <Button AutomationProperties.Name="Copy locator"
                                                             Command="{Binding DataContext.CopyCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                             CommandParameter="{Binding Value}"
-                                                            Content="&#xE8C8;"
+                                                            Content="{StaticResource G4IconCopy}"
                                                             DockPanel.Dock="Right"
                                                             Margin="8,0,0,0"
-                                                            Style="{StaticResource G4IconButton}"
+                                                            Style="{StaticResource G4SvgIconButton}"
                                                             ToolTip="Copy the locator" />
                                                     <StackPanel>
                                                         <StackPanel Orientation="Horizontal">

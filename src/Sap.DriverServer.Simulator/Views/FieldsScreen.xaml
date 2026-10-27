@@ -1,0 +1,54 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.FieldsScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation">
+    <!-- Field attributes that trip up scripts: required entries, input help, length limits, numbers, padding, and output-only fields. -->
+    <StackPanel HorizontalAlignment="Left">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="32" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" VerticalAlignment="Center" Text="Company code" sim:ScriptingTree.Id="lblZSIM_FIELDS-BUKRS" />
+            <TextBox x:Name="CompanyCodeField" Grid.Row="0" Grid.Column="1" Margin="0,4" BorderBrush="#D9822B" MaxLength="4" ToolTip="Company code (required entry, F4 help)" sim:DynproField.IsRequired="True" sim:DynproField.ValueHelp="BUKRS" sim:ScriptingTree.Id="ctxtZSIM_FIELDS-BUKRS" />
+            <TextBlock Grid.Row="0" Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6B7785" Text="Required, F4 help" />
+
+            <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="Airline" sim:ScriptingTree.Id="lblZSIM_FIELDS-CARRID" />
+            <TextBox Grid.Row="1" Grid.Column="1" Margin="0,4" MaxLength="3" ToolTip="Airline (F4 help)" sim:DynproField.ValueHelp="CARRID" sim:ScriptingTree.Id="ctxtZSIM_FIELDS-CARRID" />
+            <TextBlock Grid.Row="1" Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6B7785" Text="F4 help" />
+
+            <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Short code" sim:ScriptingTree.Id="lblZSIM_FIELDS-SHORT" />
+            <TextBox Grid.Row="2" Grid.Column="1" Margin="0,4" MaxLength="4" sim:ScriptingTree.Id="txtZSIM_FIELDS-SHORT" />
+            <TextBlock Grid.Row="2" Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6B7785" Text="At most 4 characters" />
+
+            <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Amount" sim:ScriptingTree.Id="lblZSIM_FIELDS-AMOUNT" />
+            <TextBox x:Name="AmountField" Grid.Row="3" Grid.Column="1" Margin="0,4" MaxLength="15" Text="1,234.56" TextAlignment="Right" sim:DynproField.IsNumerical="True" sim:ScriptingTree.Id="txtZSIM_FIELDS-AMOUNT" />
+            <TextBlock Grid.Row="3" Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6B7785" Text="Numeric, right-aligned" />
+
+            <TextBlock Grid.Row="4" VerticalAlignment="Center" Text="Document number" sim:ScriptingTree.Id="lblZSIM_FIELDS-BELNR" />
+            <TextBox Grid.Row="4" Grid.Column="1" Margin="0,4" Background="#ECEFF3" FontFamily="Consolas" IsReadOnly="True" Text="      4711" TextAlignment="Right" sim:ScriptingTree.Id="txtZSIM_FIELDS-BELNR" />
+            <TextBlock Grid.Row="4" Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6B7785" Text="Output only, padded" />
+
+            <TextBlock Grid.Row="5" VerticalAlignment="Center" Text="Created by" sim:ScriptingTree.Id="lblZSIM_FIELDS-ERNAM" />
+            <TextBox Grid.Row="5" Grid.Column="1" Margin="0,4" Background="#ECEFF3" IsReadOnly="True" Text="SIMUSER" sim:ScriptingTree.Id="txtZSIM_FIELDS-ERNAM" />
+            <TextBlock Grid.Row="5" Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6B7785" Text="Output only" />
+
+            <TextBlock Grid.Row="6" VerticalAlignment="Center" Text="Posting period" sim:ScriptingTree.Id="lblZSIM_FIELDS-MONAT" />
+            <TextBox Grid.Row="6" Grid.Column="1" Margin="0,4" IsEnabled="False" Text="10" sim:ScriptingTree.Id="txtZSIM_FIELDS-MONAT" />
+            <TextBlock Grid.Row="6" Grid.Column="2" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="#6B7785" Text="Disabled" />
+        </Grid>
+
+        <TextBlock Margin="0,12,0,0" Foreground="#6B7785" Text="Press Enter to check the entries. Press F4 in an F4 help field to open its input help." sim:ScriptingTree.Id="lblZSIM_FIELDS-HINT" />
+    </StackPanel>
+</UserControl>

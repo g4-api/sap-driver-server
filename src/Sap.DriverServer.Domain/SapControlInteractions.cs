@@ -16,6 +16,7 @@ namespace Sap.DriverServer.Domain
     /// members. The mapping below uses only those members and reports every other combination explicitly:
     /// an interaction the control family cannot perform is <see cref="WebDriverErrorCodes.ElementNotInteractable"/>,
     /// and a control family scripting does not drive generically (shells) is <see cref="WebDriverErrorCodes.UnsupportedOperation"/>.
+    /// Shell members are reached through the allow-listed calls of <see cref="SapMemberInteractions"/> instead.
     /// </para>
     /// <para>
     /// Send keys replaces the control's text, because SAP GUI Scripting sets the <c>text</c> property rather than
@@ -28,28 +29,52 @@ namespace Sap.DriverServer.Domain
         // Maps public attribute names (case-insensitive) to the SAP GUI Scripting properties they read.
         private static readonly Dictionary<string, string> AttributeProperties = new(StringComparer.OrdinalIgnoreCase)
         {
+            ["buttonCount"] = "ButtonCount",
             ["changeable"] = "Changeable",
+            ["charLeft"] = "CharLeft",
+            ["charTop"] = "CharTop",
+            ["columnCount"] = "ColumnCount",
             ["containerType"] = "ContainerType",
+            ["currentCellColumn"] = "CurrentCellColumn",
+            ["currentCellRow"] = "CurrentCellRow",
             ["defaultTooltip"] = "DefaultTooltip",
+            ["displayedText"] = "DisplayedText",
+            ["firstVisibleRow"] = "FirstVisibleRow",
             ["handle"] = "Handle",
             ["height"] = "Height",
             ["highlighted"] = "Highlighted",
+            ["horizontalScrollbar.maximum"] = "HorizontalScrollbar.Maximum",
+            ["horizontalScrollbar.pageSize"] = "HorizontalScrollbar.PageSize",
+            ["horizontalScrollbar.position"] = "HorizontalScrollbar.Position",
             ["iconName"] = "IconName",
             ["id"] = "Id",
+            ["isListElement"] = "IsListElement",
+            ["isOField"] = "IsOField",
             ["key"] = "Key",
             ["left"] = "ScreenLeft",
+            ["lineCount"] = "LineCount",
             ["maxLength"] = "MaxLength",
+            ["messageAsPopup"] = "MessageAsPopup",
             ["modified"] = "Modified",
             ["name"] = "Name",
             ["numerical"] = "Numerical",
             ["required"] = "Required",
+            ["rowCount"] = "RowCount",
             ["selected"] = "Selected",
+            ["selectedItemNode"] = "SelectedItemNode",
+            ["selectedNode"] = "SelectedNode",
+            ["selectedRows"] = "SelectedRows",
             ["subType"] = "SubType",
             ["text"] = "Text",
+            ["toolbarButtonCount"] = "ToolbarButtonCount",
             ["tooltip"] = "Tooltip",
             ["top"] = "ScreenTop",
             ["type"] = "Type",
             ["value"] = "Value",
+            ["verticalScrollbar.maximum"] = "VerticalScrollbar.Maximum",
+            ["verticalScrollbar.pageSize"] = "VerticalScrollbar.PageSize",
+            ["verticalScrollbar.position"] = "VerticalScrollbar.Position",
+            ["visibleRowCount"] = "VisibleRowCount",
             ["width"] = "Width"
         };
 
@@ -116,10 +141,18 @@ namespace Sap.DriverServer.Domain
             }
 
             // Never read password text, whichever attribute name requests it.
-            var isPasswordText = propertyName == "Text" && string.Equals(node.Type, SapGuiTypes.PasswordField, StringComparison.Ordinal);
+            var isTextProperty = propertyName is "Text" or "DisplayedText";
+            var isPasswordText = isTextProperty && string.Equals(node.Type, SapGuiTypes.PasswordField, StringComparison.Ordinal);
             if (isPasswordText)
             {
                 return string.Empty;
+            }
+
+            // Read a child object's property for dotted paths, such as a scroll bar position.
+            var separator = propertyName.IndexOf('.', StringComparison.Ordinal);
+            if (separator > 0)
+            {
+                return GetChildString(node, propertyName[..separator], propertyName[(separator + 1)..]);
             }
 
             // Format window handles in the same hexadecimal form as the window endpoints.
@@ -211,6 +244,22 @@ namespace Sap.DriverServer.Domain
             }
 
             node.SetProperty("Text", text ?? string.Empty);
+        }
+
+        // Reads a property of a child object, such as VerticalScrollbar.Position; a missing child reads as empty.
+        private static string GetChildString(ISapGuiNode node, string childName, string propertyName)
+        {
+            // Treat a control without the child object like an unknown attribute, which reads as an empty string.
+            try
+            {
+                var child = node.GetNode(childName);
+
+                return child is null ? string.Empty : SapGuiNavigator.GetString(child, propertyName);
+            }
+            catch (SapDriverException exception) when (exception.ErrorKind == SapErrorKinds.NotExposedByScripting)
+            {
+                return string.Empty;
+            }
         }
 
         // Builds the "element not interactable" failure for an interaction the control family cannot perform.

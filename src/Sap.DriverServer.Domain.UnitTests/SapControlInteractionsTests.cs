@@ -120,14 +120,41 @@ namespace Sap.DriverServer.Domain.UnitTests
             // Arrange: a filled password field.
             var node = NewControl("GuiPasswordField");
             node.Properties["Text"] = "TopSecret1";
+            node.Properties["DisplayedText"] = "TopSecret1";
 
-            // Act: read the text and the text attribute.
+            // Act: read the text, the text attribute, and the displayed text attribute.
             var text = SapControlInteractions.GetText(node);
             var attribute = SapControlInteractions.GetAttribute(node, "TEXT");
+            var displayed = SapControlInteractions.GetAttribute(node, "displayedText");
 
-            // Assert: both are empty.
+            // Assert: all are empty, and neither text property was ever read from SAP.
             Assert.AreEqual(string.Empty, text);
             Assert.AreEqual(string.Empty, attribute);
+            Assert.AreEqual(string.Empty, displayed);
+            Assert.DoesNotContain("DisplayedText", node.PropertyReads);
+        }
+
+        [TestMethod(DisplayName = "Verify that dotted attribute names read a scroll bar's values and read as empty without a scroll bar.")]
+        #region *** Data Set ***
+        [DataRow("GuiTableControl", "verticalScrollbar.position", "12")]
+        [DataRow("GuiTableControl", "VerticalScrollbar.Maximum", "199")]
+        [DataRow("GuiTextField", "verticalScrollbar.position", "")]
+        #endregion
+        public void GetAttributeChildPathTest(string type, string name, string expected)
+        {
+            // Arrange: a control; table controls get a vertical scroll bar.
+            var node = NewControl(type);
+            if (type == "GuiTableControl")
+            {
+                var scrollbar = new FakeSapGuiNode($"{node.Id}/scrollbar", "GuiScrollbar").With("Position", 12).With("Maximum", 199);
+                node.Properties["VerticalScrollbar"] = scrollbar;
+            }
+
+            // Act: read the dotted attribute.
+            var value = SapControlInteractions.GetAttribute(node, name);
+
+            // Assert: the scroll bar value, or empty when the control has no scroll bar.
+            Assert.AreEqual(expected, value);
         }
 
         [TestMethod(DisplayName = "Verify that attribute reads use the whitelist, format values, and return empty for unknown names.")]

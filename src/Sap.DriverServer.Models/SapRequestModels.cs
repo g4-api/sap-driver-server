@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace Sap.DriverServer.Models
@@ -23,6 +24,60 @@ namespace Sap.DriverServer.Models
         /// Gets or sets the target window name, such as <c>wnd[1]</c>; null or empty targets the session's active window.
         /// </summary>
         public string Window { get; set; }
+        #endregion
+    }
+
+    /// <summary>
+    /// Represents the request body of the SAP-specific "call element method" endpoint.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The method must be on the driver's allow-list for the element's control family, such as
+    /// <c>pressToolbarButton</c> for a grid view shell or <c>expandNode</c> for a tree shell. Method names are matched
+    /// case-insensitively.
+    /// </para>
+    /// <para>
+    /// Arguments are positional JSON scalars: strings, numbers, Booleans, or null. Whole numbers are passed as integers,
+    /// so row indexes and positions reach SAP GUI with the type its methods expect.
+    /// </para>
+    /// </remarks>
+    public class SapMethodCallModel
+    {
+        #region *** Properties   ***
+        /// <summary>
+        /// Gets or sets the positional arguments; empty for methods without parameters.
+        /// </summary>
+        public IList<object> Arguments { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the SAP GUI Scripting method name, such as <c>pressToolbarButton</c>.
+        /// </summary>
+        [Required]
+        public string Method { get; set; }
+        #endregion
+    }
+
+    /// <summary>
+    /// Represents the request body of the SAP-specific "set element property" endpoint.
+    /// </summary>
+    /// <remarks>
+    /// The property must be on the driver's allow-list for the element's control family, such as <c>selectedRows</c>
+    /// for a grid view shell or <c>verticalScrollbar.position</c> for a table control or scroll container. The value
+    /// is a JSON scalar.
+    /// </remarks>
+    public class SapPropertyModel
+    {
+        #region *** Properties   ***
+        /// <summary>
+        /// Gets or sets the property name, such as <c>selectedRows</c>; scroll bar positions use a dotted name.
+        /// </summary>
+        [Required]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value to assign: a string, number, or Boolean.
+        /// </summary>
+        public object Value { get; set; }
         #endregion
     }
 
@@ -90,6 +145,15 @@ namespace Sap.DriverServer.Models
     public class SapStatusBarModel
     {
         #region *** Properties   ***
+        /// <summary>
+        /// Gets or sets a value indicating whether the message is also shown in a popup window, such as <c>wnd[1]</c>.
+        /// </summary>
+        /// <remarks>
+        /// SAP shows information and termination messages, and others when the user chose so, in a dialog box. The
+        /// status bar still reports the message; this flag tells a client to look for the popup and answer it.
+        /// </remarks>
+        public bool MessageAsPopup { get; set; }
+
         /// <summary>
         /// Gets or sets the message class identifier, such as <c>00</c>.
         /// </summary>

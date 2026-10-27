@@ -171,6 +171,21 @@ namespace Sap.DriverServer.Inspector.Views
             _ = ViewModel.OnCanvasClickAsync(position.X, position.Y);
         }
 
+        // Reports how far the Viewbox shrinks the screenshot, so canvas tags and frame lines keep their on-screen size.
+        private void OnScreenSurfaceLayoutUpdated(object sender, EventArgs e)
+        {
+            // Nothing to measure until the surface is part of the window and holds an image.
+            if (ScreenSurface.ActualWidth <= 0 || !ScreenSurface.IsVisible)
+            {
+                return;
+            }
+
+            // Measure one image pixel in window units; the view model ignores repeats and redraws on a real change.
+            var origin = ScreenSurface.TransformToAncestor(this).Transform(new Point(0, 0));
+            var unit = ScreenSurface.TransformToAncestor(this).Transform(new Point(1, 0));
+            ViewModel.Screen.DisplayScale = unit.X - origin.X;
+        }
+
         // Feeds canvas hover positions, in image pixels, to live inspection.
         private void OnScreenMouseMove(object sender, MouseEventArgs e)
         {

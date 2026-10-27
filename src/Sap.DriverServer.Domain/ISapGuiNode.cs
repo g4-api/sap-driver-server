@@ -75,6 +75,14 @@ namespace Sap.DriverServer.Domain
         object InvokeMethod(string methodName, params object[] arguments);
 
         /// <summary>
+        /// Invokes a scripting method that returns another scripting object, such as <c>getCell</c>.
+        /// </summary>
+        /// <param name="methodName">The SAP GUI Scripting method name.</param>
+        /// <param name="arguments">The positional method arguments.</param>
+        /// <returns>The wrapped object, or null when the method returns no scripting object.</returns>
+        ISapGuiNode InvokeNodeMethod(string methodName, params object[] arguments);
+
+        /// <summary>
         /// Sets a scalar property value, such as <c>text</c>, <c>selected</c>, or <c>key</c>.
         /// </summary>
         /// <param name="propertyName">The SAP GUI Scripting property name.</param>

@@ -157,6 +157,13 @@ namespace Sap.DriverServer.Scripting
         }
 
         /// <inheritdoc />
+        public ISapGuiNode InvokeNodeMethod(string methodName, params object[] arguments)
+        {
+            // Wrap the returned scripting object; the engine tracks it so the operation releases it.
+            return _engine.NewNode(InvokeMember(_comObject, methodName, arguments ?? []));
+        }
+
+        /// <inheritdoc />
         public void SetProperty(string propertyName, object value)
         {
             // Assign the property through IDispatch property-put.

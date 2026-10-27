@@ -311,6 +311,22 @@ namespace Sap.DriverServer.Inspector.Services
         }
 
         /// <summary>
+        /// Calls an allow-listed SAP GUI Scripting method on a control, such as <c>pressToolbarButton</c> on a grid.
+        /// </summary>
+        /// <param name="sessionId">The WebDriver session identifier.</param>
+        /// <param name="elementId">The element reference.</param>
+        /// <param name="method">The method name.</param>
+        /// <param name="arguments">The positional scalar arguments.</param>
+        /// <returns>The result: a scalar, an array, an element reference object, or an empty object.</returns>
+        public Task<JsonElement> InvokeElementMethodAsync(string sessionId, string elementId, string method, params object[] arguments)
+        {
+            // Send the call; methods outside the driver's allow-list come back as "unsupported operation".
+            var body = new SapMethodCallModel { Arguments = arguments ?? [], Method = method };
+
+            return SendAsync(HttpMethod.Post, $"session/{sessionId}/sap/element/{elementId}/call", body);
+        }
+
+        /// <summary>
         /// Maximizes the session's current window.
         /// </summary>
         /// <param name="sessionId">The WebDriver session identifier.</param>
@@ -346,6 +362,22 @@ namespace Sap.DriverServer.Inspector.Services
         public Task SendVirtualKeyAsync(string sessionId, SapVirtualKeyModel virtualKey)
         {
             return SendAsync(HttpMethod.Post, $"session/{sessionId}/sap/vkey", virtualKey);
+        }
+
+        /// <summary>
+        /// Sets an allow-listed property on a control, such as <c>selectedRows</c> or <c>verticalScrollbar.position</c>.
+        /// </summary>
+        /// <param name="sessionId">The WebDriver session identifier.</param>
+        /// <param name="elementId">The element reference.</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="value">The scalar value.</param>
+        /// <returns>A task that completes when the driver set the property.</returns>
+        public Task SetElementPropertyAsync(string sessionId, string elementId, string name, object value)
+        {
+            // Send the assignment; properties outside the driver's allow-list come back as "unsupported operation".
+            var body = new SapPropertyModel { Name = name, Value = value };
+
+            return SendAsync(HttpMethod.Post, $"session/{sessionId}/sap/element/{elementId}/property", body);
         }
 
         /// <summary>

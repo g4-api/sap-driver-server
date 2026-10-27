@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 using Sap.DriverServer.Inspector.Models;
 using Sap.DriverServer.Inspector.Mvvm;
+using Sap.DriverServer.Inspector.Services;
 using Sap.DriverServer.Models;
 
 namespace Sap.DriverServer.Inspector.ViewModels
@@ -25,6 +27,12 @@ namespace Sap.DriverServer.Inspector.ViewModels
     /// Highlights are COM-free value objects. The selection is always the first highlight; locator matches follow.
     /// Every member runs on the UI thread.
     /// </para>
+    /// <para>
+    /// Tags and frames are drawn like the desktop overlay: the frame just outside the control and the tag outside the
+    /// frame, above it, or below it when there is no room above, or inside as a last resort. The view shrinks the
+    /// screenshot to fit, so it reports <see cref="DisplayScale"/> and the tag and frame line are counter-scaled to keep
+    /// the desktop overlay's on-screen size at any zoom.
+    /// </para>
     /// </remarks>
     public sealed class ScreenViewModel : ObservableObject
     {
@@ -34,6 +42,9 @@ namespace Sap.DriverServer.Inspector.ViewModels
 
         // Backs Caption.
         private string _caption = "No screenshot yet.";
+
+        // Backs DisplayScale; one until the view reports how far it shrank the screenshot.
+        private double _displayScale = 1;
 
         // Backs Image.
         private BitmapSource _image;
@@ -53,6 +64,30 @@ namespace Sap.DriverServer.Inspector.ViewModels
         {
             get => _caption;
             private set => SetProperty(ref _caption, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the on-screen size of one image pixel, in device-independent pixels; one at full size.
+        /// </summary>
+        /// <remarks>
+        /// The view sets it whenever it rescales the screenshot. A change redraws the highlights, because tag sizes and
+        /// placements depend on it. Values that are not positive are ignored.
+        /// </remarks>
+        public double DisplayScale
+        {
+            get => _displayScale;
+            set
+            {
+                // Ignore invalid scales and tiny layout jitter; redraw only on a real change.
+                if (value <= 0 || Math.Abs(value - _displayScale) < 0.001)
+                {
+                    return;
+                }
+
+                SetProperty(ref _displayScale, value);
+                OnPropertyChanged(nameof(TagMaxWidth));
+                UpdateHighlights();
+            }
         }
 
         /// <summary>
@@ -78,6 +113,14 @@ namespace Sap.DriverServer.Inspector.ViewModels
         /// Gets the screenshot width in pixels; zero before the first capture.
         /// </summary>
         public int ImageWidth => _image?.PixelWidth ?? 0;
+
+        /// <summary>
+        /// Gets the widest a tag may be before its scale is applied: the screenshot's on-screen width.
+        /// </summary>
+        /// <remarks>
+        /// Tags are counter-scaled, so their own width is in on-screen units; a longer label is trimmed with an ellipsis.
+        /// </remarks>
+        public double TagMaxWidth => ImageWidth * DisplayScale;
         #endregion
 
         #region *** Methods      ***
@@ -104,6 +147,7 @@ namespace Sap.DriverServer.Inspector.ViewModels
             Image = bitmap;
             OnPropertyChanged(nameof(ImageWidth));
             OnPropertyChanged(nameof(ImageHeight));
+            OnPropertyChanged(nameof(TagMaxWidth));
             Caption = $"{capture.WindowId}  ·  captured {DateTime.Now:HH:mm:ss}";
             UpdateHighlights();
         }
@@ -120,6 +164,7 @@ namespace Sap.DriverServer.Inspector.ViewModels
             Image = null;
             OnPropertyChanged(nameof(ImageWidth));
             OnPropertyChanged(nameof(ImageHeight));
+            OnPropertyChanged(nameof(TagMaxWidth));
             Caption = "No screenshot yet.";
             Highlights.Clear();
         }
@@ -195,11 +240,33 @@ namespace Sap.DriverServer.Inspector.ViewModels
             var right = Math.Min(ImageWidth, (rectangle.Right - _capture.WindowRect.X) / scaleX);
             var bottom = Math.Min(ImageHeight, (rectangle.Bottom - _capture.WindowRect.Y) / scaleY);
 
-            return right <= left || bottom <= top ? null : new CanvasHighlight
+            if (right <= left || bottom <= top)
             {
+                return null;
+            }
+
+            // Counter-scale the tag and the frame line, so they keep the desktop overlay's size on screen.
+            var tagScale = 1 / DisplayScale;
+            var frame = HighlightGeometry.BorderDip * tagScale;
+            var tagHeight = HighlightGeometry.TagHeightDip * tagScale;
+
+            // Place the tag outside the frame: above, else below, else inside the top-left corner.
+            var (placement, tagY) = (top - frame - tagHeight >= 0, bottom + frame + tagHeight <= ImageHeight) switch
+            {
+                (true, _) => (CanvasTagPlacement.Above, top - frame - tagHeight),
+                (false, true) => (CanvasTagPlacement.Below, bottom + frame),
+                _ => (CanvasTagPlacement.Inside, top)
+            };
+
+            return new CanvasHighlight
+            {
+                FrameThickness = frame,
                 Height = bottom - top,
                 IsMatch = isMatch,
                 Label = label,
+                TagPlacement = placement,
+                TagScale = tagScale,
+                TagY = tagY,
                 Width = right - left,
                 X = left,
                 Y = top
@@ -244,6 +311,16 @@ namespace Sap.DriverServer.Inspector.ViewModels
     {
         #region *** Properties   ***
         /// <summary>
+        /// Gets the frame line thickness in image pixels; the frame is drawn just outside the rectangle.
+        /// </summary>
+        public double FrameThickness { get; init; }
+
+        /// <summary>
+        /// Gets the frame's outward offset: the negative frame thickness on every side, for the view's margin.
+        /// </summary>
+        public Thickness FrameOffset => new(-FrameThickness);
+
+        /// <summary>
         /// Gets the height in image pixels.
         /// </summary>
         public double Height { get; init; }
@@ -259,6 +336,21 @@ namespace Sap.DriverServer.Inspector.ViewModels
         public string Label { get; init; } = string.Empty;
 
         /// <summary>
+        /// Gets where the tag sits: one of the <see cref="CanvasTagPlacement"/> values.
+        /// </summary>
+        public string TagPlacement { get; init; } = CanvasTagPlacement.Above;
+
+        /// <summary>
+        /// Gets the factor that sizes the tag in image pixels, so it shows at the desktop overlay's size on screen.
+        /// </summary>
+        public double TagScale { get; init; } = 1;
+
+        /// <summary>
+        /// Gets the top edge of the tag in image pixels.
+        /// </summary>
+        public double TagY { get; init; }
+
+        /// <summary>
         /// Gets the width in image pixels.
         /// </summary>
         public double Width { get; init; }
@@ -272,6 +364,33 @@ namespace Sap.DriverServer.Inspector.ViewModels
         /// Gets the top edge in image pixels.
         /// </summary>
         public double Y { get; init; }
+        #endregion
+    }
+
+    /// <summary>
+    /// Names where a canvas highlight's tag sits relative to its frame.
+    /// </summary>
+    /// <remarks>
+    /// The tag goes above the frame when the screenshot has room, below it otherwise, and inside the frame's top-left
+    /// corner only when neither fits, such as for a control that fills the whole window.
+    /// </remarks>
+    public static class CanvasTagPlacement
+    {
+        #region *** Constants    ***
+        /// <summary>
+        /// Specifies a tag above the frame, the default, as on the desktop overlay.
+        /// </summary>
+        public const string Above = "Above";
+
+        /// <summary>
+        /// Specifies a tag below the frame, for controls at the top edge of the screenshot.
+        /// </summary>
+        public const string Below = "Below";
+
+        /// <summary>
+        /// Specifies a tag inside the frame's top-left corner, when there is no room above or below.
+        /// </summary>
+        public const string Inside = "Inside";
         #endregion
     }
 }

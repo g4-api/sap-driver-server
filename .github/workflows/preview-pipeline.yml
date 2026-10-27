@@ -1,0 +1,185 @@
+# Workflow to build, test, and release a preview of the SAP driver server and the SAP GUI Inspector
+name: Build & Release Preview
+
+# Permissions for the workflow
+permissions:
+  contents: write
+
+# Trigger the workflow on manual execution only using the workflow_dispatch event
+on:
+  workflow_dispatch:
+
+# Set environment variables
+env:
+  artifactStagingDirectory: ${{ github.workspace }}/artifact_staging
+  artifactType: 'Preview'
+  binariesDirectory: ${{ github.workspace }}/binaries
+  buildConfiguration: 'Release'
+  inspectorName: Sap.DriverServer.Inspector
+  projectName: Sap.DriverServer
+  runtimeIdentifier: 'win-x64'
+  solutionName: Sap
+  testProjectName: Sap.DriverServer.Domain.UnitTests
+
+# Default settings for all run steps
+defaults:
+  run:
+    working-directory: src
+
+# Define jobs for the workflow
+jobs:
+  # Job to get the version of the build
+  new-version:
+    name: New Version
+    runs-on: windows-latest
+
+    # Outputs of the job
+    outputs:
+      buildVersion: ${{ steps.parse-version.outputs.version }}
+      validVersion: ${{ steps.validate-version.outputs.valid }}
+
+    steps:
+    # Step to checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    # Step to parse the build version for GitHub tag
+    - name: Parse Build Version for GitHub Tag
+      id: parse-version
+      shell: pwsh
+      run: echo "version=$(Get-Date -UFormat '%Y.%m.%d').${{ github.run_number }}" >> $env:GITHUB_OUTPUT
+
+    # Step to validate the parsed version
+    - name: Validate Version ${{ steps.parse-version.outputs.version }}
+      id: validate-version
+      shell: pwsh
+      run: |
+        $version = "${{ steps.parse-version.outputs.version }}"
+        echo "valid=$($version -match '^\d+(\.\d+){3}$')" >> $env:GITHUB_OUTPUT
+
+  # Job to test, build, and publish the driver server and the inspector
+  new-build:
+    name: Build & Publish Version ${{ needs.new-version.outputs.buildVersion }}
+    runs-on: windows-latest
+    needs: new-version
+    if: ${{ needs.new-version.result == 'success' && needs.new-version.outputs.validVersion == 'True' }}
+
+    # Outputs of the job
+    outputs:
+      buildVersion: ${{ needs.new-version.outputs.buildVersion }}
+
+    # Set environment variables specific to the build job
+    env:
+      buildVersion: ${{ needs.new-version.outputs.buildVersion }}
+
+    steps:
+    # Step to checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    # Step to setup .NET Core SDK
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10
+
+    # Step to restore packages
+    - name: Restore Packages
+      shell: pwsh
+      run: dotnet restore ${{ env.solutionName }}.sln
+
+    # Step to run the unit tests; a failure stops the release. SAP GUI and simulator tests skip themselves on the runner.
+    - name: Test
+      shell: pwsh
+      run: dotnet test ${{ env.testProjectName }}/${{ env.testProjectName }}.csproj --configuration ${{ env.buildConfiguration }} --no-restore
+
+    # Step to set the version shown by the driver's console logo
+    - name: Set Version v${{ env.buildVersion }}
+      shell: pwsh
+      run: |
+          $tempVersion = '"0000.00.00.0000"'
+          $version     = '"${{ env.buildVersion }}"'
+
+          Get-ChildItem -Path '${{ github.workspace }}' -Filter "Program.cs" -Recurse | ForEach-Object {
+              $filePath = $_.FullName
+              $content = Get-Content -Path $filePath -Raw
+              $newContent = $content -replace [regex]::Escape($tempVersion), $version
+              Set-Content -Path $filePath -Value $newContent
+          }
+
+    # Step to publish the driver server and the inspector; framework-dependent, so the target needs the .NET 10 runtime
+    - name: Publish
+      shell: pwsh
+      run: |
+        dotnet publish ${{ env.projectName }}/${{ env.projectName }}.csproj `
+            --configuration ${{ env.buildConfiguration }} `
+            --runtime ${{ env.runtimeIdentifier }} `
+            --self-contained false `
+            --output ${{ env.binariesDirectory }}/sap-driver-server
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+        dotnet publish ${{ env.inspectorName }}/${{ env.inspectorName }}.csproj `
+            --configuration ${{ env.buildConfiguration }} `
+            --runtime ${{ env.runtimeIdentifier }} `
+            --self-contained false `
+            --output ${{ env.binariesDirectory }}/sap-inspector
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+    # Step to create the build artifacts
+    - name: Create Build Artifacts
+      shell: pwsh
+      run: |
+        New-Item -Path "${{ env.artifactStagingDirectory }}" -ItemType Directory
+        Compress-Archive `
+            -Path ${{ env.binariesDirectory }}/sap-driver-server/* `
+            -DestinationPath ${{ env.artifactStagingDirectory }}/${{ env.projectName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
+        Compress-Archive `
+            -Path ${{ env.binariesDirectory }}/sap-inspector/* `
+            -DestinationPath ${{ env.artifactStagingDirectory }}/${{ env.inspectorName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
+
+    # Step to upload the build artifacts
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: drop
+        path: ${{ env.artifactStagingDirectory }}/*.zip
+        if-no-files-found: error
+
+  # Job to create a GitHub release and tag the new version
+  new-release:
+    name: New GitHub Release Version ${{ needs.new-version.outputs.buildVersion }}
+    runs-on: windows-latest
+    needs:
+      - new-version
+      - new-build
+    if: success()
+
+    # Set environment variables specific to the release job
+    env:
+      buildVersion: ${{ needs.new-version.outputs.buildVersion }}
+
+    steps:
+    # Step to checkout the repository
+    - name: Checkout repository
+      uses: actions/checkout@v7
+
+    # Step to download build artifacts
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@v8
+      with:
+        name: drop
+
+    # Step to create a GitHub release and tag
+    # The -preview suffix keeps preview tags apart from production tags, because each workflow has its own run number.
+    - name: Create GitHub Release & Tag v${{ env.buildVersion }}-preview
+      uses: softprops/action-gh-release@v3
+      with:
+        files: |
+          ./${{ env.projectName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
+          ./${{ env.inspectorName }}.${{ env.buildVersion }}-${{ env.runtimeIdentifier }}.zip
+        tag_name: v${{ env.buildVersion }}-preview
+        name: ${{ env.artifactType }} v${{ env.buildVersion }}
+        generate_release_notes: true
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

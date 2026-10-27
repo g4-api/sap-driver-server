@@ -1,0 +1,6 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.ListScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- An ABAP list: fixed-pitch text placed on a character grid; the code places one label per output field. -->
+    <Canvas x:Name="ListCanvas" Background="White" ClipToBounds="True" MouseLeftButtonDown="OnListCanvasMouseLeftButtonDown" TextElement.FontFamily="Consolas" TextElement.FontSize="13" />
+</UserControl>

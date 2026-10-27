@@ -7,7 +7,8 @@ namespace Sap.DriverServer.Simulator.Scripting
     /// Simulates SAP's <c>GuiCTextField</c>: a text field with an input help (<c>ctxt</c>).
     /// </summary>
     /// <remarks>
-    /// The simulator does not open an input help; the type exists so locators and type-specific behavior match SAP GUI.
+    /// Fields with an input help open it as a hit list popup (<c>wnd[1]</c>) when the window receives F4 (virtual key
+    /// 4) while the field has the focus, as in <c>setFocus</c> followed by <c>sendVKey 4</c>.
     /// </remarks>
     [ComVisible(true)]
     public sealed class GuiCTextField : GuiTextField

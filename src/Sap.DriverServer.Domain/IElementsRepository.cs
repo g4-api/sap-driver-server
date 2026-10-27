@@ -106,6 +106,17 @@ namespace Sap.DriverServer.Domain
         int InvokeClick(string session, string element);
 
         /// <summary>
+        /// Calls an allow-listed SAP GUI Scripting method on a control, such as <c>pressToolbarButton</c> on a grid.
+        /// </summary>
+        /// <param name="session">The session identifier.</param>
+        /// <param name="element">The element reference identifier.</param>
+        /// <param name="call">The method name and positional arguments.</param>
+        /// <returns>
+        /// 200 with the result (a scalar, an array, an element reference, or null), or 404 when the element is stale.
+        /// </returns>
+        (int StatusCode, object Value) InvokeElementMethod(string session, string element, SapMethodCallModel call);
+
+        /// <summary>
         /// Writes text to a control, replacing its content.
         /// </summary>
         /// <param name="session">The session identifier.</param>
@@ -113,6 +124,15 @@ namespace Sap.DriverServer.Domain
         /// <param name="text">The text to write.</param>
         /// <returns>200 when written; 404 when the element is stale.</returns>
         int SetValue(string session, string element, string text);
+
+        /// <summary>
+        /// Sets an allow-listed property on a control, such as <c>selectedRows</c> or <c>verticalScrollbar.position</c>.
+        /// </summary>
+        /// <param name="session">The session identifier.</param>
+        /// <param name="element">The element reference identifier.</param>
+        /// <param name="property">The property name and value.</param>
+        /// <returns>200 when the property was set, or 404 when the element is stale.</returns>
+        int SetElementProperty(string session, string element, SapPropertyModel property);
         #endregion
     }
 }

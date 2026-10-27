@@ -1,0 +1,42 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.TreesScreen"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation"
+             xmlns:views="clr-namespace:Sap.DriverServer.Simulator.Views">
+    <!-- The three SAP tree types side by side, each in its own custom control container. -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="250" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Grid.Column="0" Margin="0,0,8,0">
+            <TextBlock Margin="0,0,0,4" DockPanel.Dock="Top" FontWeight="SemiBold" Text="Simple tree (type 0)" />
+            <Border BorderBrush="#B8C2CC" BorderThickness="1" sim:ScriptingTree.Id="cntlTREE_SIMPLE">
+                <Border sim:ScriptingTree.Id="shellcont">
+                    <views:TreeHost x:Name="SimpleTreeView" BorderThickness="0" MouseDoubleClick="OnTreeDoubleClick" sim:ScriptingTree.Id="shell" />
+                </Border>
+            </Border>
+        </DockPanel>
+
+        <DockPanel Grid.Column="1" Margin="0,0,8,0">
+            <TextBlock Margin="0,0,0,4" DockPanel.Dock="Top" FontWeight="SemiBold" Text="List tree (type 1)" />
+            <Border BorderBrush="#B8C2CC" BorderThickness="1" sim:ScriptingTree.Id="cntlTREE_LIST">
+                <Border sim:ScriptingTree.Id="shellcont">
+                    <views:TreeHost x:Name="ListTreeView" BorderThickness="0" MouseDoubleClick="OnTreeDoubleClick" sim:ScriptingTree.Id="shell" />
+                </Border>
+            </Border>
+        </DockPanel>
+
+        <DockPanel Grid.Column="2">
+            <TextBlock Margin="0,0,0,4" DockPanel.Dock="Top" FontWeight="SemiBold" Text="Column tree (type 2)" />
+            <Border BorderBrush="#B8C2CC" BorderThickness="1" sim:ScriptingTree.Id="cntlTREE_COLUMN">
+                <DockPanel sim:ScriptingTree.Id="shellcont">
+                    <StackPanel x:Name="ColumnHeaders" Margin="20,2,0,2" DockPanel.Dock="Top" Orientation="Horizontal" />
+                    <views:TreeHost x:Name="ColumnTreeView" BorderThickness="0" MouseDoubleClick="OnTreeDoubleClick" sim:ScriptingTree.Id="shell" />
+                </DockPanel>
+            </Border>
+        </DockPanel>
+    </Grid>
+</UserControl>

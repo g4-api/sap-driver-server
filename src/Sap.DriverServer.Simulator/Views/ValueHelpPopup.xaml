@@ -1,0 +1,24 @@
+<UserControl x:Class="Sap.DriverServer.Simulator.Views.ValueHelpPopup"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sim="clr-namespace:Sap.DriverServer.Simulator.Simulation">
+    <!-- The hit list is a grid view shell in the RESULTLIST custom control; the columns are built from the input help. -->
+    <StackPanel Margin="16" sim:ScriptingTree.Id="usr">
+        <Border Width="420" Height="180" BorderBrush="#B8C2CC" BorderThickness="1" sim:ScriptingTree.Id="cntlRESULTLIST">
+            <Border sim:ScriptingTree.Id="shellcont">
+                <DataGrid x:Name="ResultGrid"
+                          AutoGenerateColumns="False"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False"
+                          CanUserReorderColumns="False"
+                          CanUserSortColumns="False"
+                          HeadersVisibility="Column"
+                          IsReadOnly="True"
+                          SelectionMode="Single"
+                          SelectionUnit="FullRow"
+                          MouseDoubleClick="OnResultGridDoubleClick"
+                          sim:ScriptingTree.Id="shell" />
+            </Border>
+        </Border>
+    </StackPanel>
+</UserControl>

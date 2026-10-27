@@ -205,6 +205,13 @@ namespace Sap.DriverServer.Domain.UnitTests.Support
         }
 
         /// <inheritdoc />
+        public ISapGuiNode InvokeNodeMethod(string methodName, params object[] arguments)
+        {
+            // Run the method like InvokeMethod and expose a node result; other results mean "no scripting object".
+            return InvokeMethod(methodName, arguments) as ISapGuiNode;
+        }
+
+        /// <inheritdoc />
         public void SetProperty(string propertyName, object value)
         {
             // Record and apply the assignment.
