@@ -1,7 +1,7 @@
 # SAP Driver Server
 
 SAP Driver Server is a W3C WebDriver server for SAP GUI for Windows. It mirrors the G4
-[UIA driver server](https://github.com/g4-api/uia-driver) protocol, routes, response envelopes, and error format, and
+[UIA driver server](https://github.com/g4-api/uia-driver-server) protocol, routes, response envelopes, and error format, and
 drives SAP GUI through the SAP GUI Scripting API over Windows COM instead of Microsoft UI Automation (UIA).
 
 The server attaches to SAP GUI sessions that are already open. It never opens connections, logs on, or handles
@@ -13,16 +13,18 @@ credentials.
 2. [Download a release](#download-a-release)
 3. [Build and run](#build-and-run)
 4. [Connect from G4 or Selenium](#connect-from-g4-or-selenium)
-5. [Session selection](#session-selection)
-6. [Locating controls](#locating-controls)
-7. [Capabilities at a glance](#capabilities-at-a-glance)
-8. [Differences from the UIA driver server](#differences-from-the-uia-driver-server)
-9. [Configuration](#configuration)
-10. [Architecture](#architecture)
-11. [SAP GUI Inspector](#sap-gui-inspector)
-12. [SAP GUI simulator](#sap-gui-simulator)
-13. [Tests](#tests)
-14. [Further reading](#further-reading)
+5. [Use it from G4 and G4 Studio](#use-it-from-g4-and-g4-studio)
+6. [Session selection](#session-selection)
+7. [Locating controls](#locating-controls)
+8. [Capabilities at a glance](#capabilities-at-a-glance)
+9. [Differences from the UIA driver server](#differences-from-the-uia-driver-server)
+10. [Compatibility](#compatibility)
+11. [Configuration](#configuration)
+12. [Architecture](#architecture)
+13. [SAP GUI Inspector](#sap-gui-inspector)
+14. [SAP GUI simulator](#sap-gui-simulator)
+15. [Tests](#tests)
+16. [Further reading](#further-reading)
 
 ## Prerequisites
 
@@ -126,6 +128,39 @@ driver.FindElement(By.Xpath("//GuiOkCodeField")).SendKeys("/nSE16");
 driver.FindElement(By.Xpath("//GuiButton[@name='btn[0]']")).Click();
 ```
 
+## Use it from G4 and G4 Studio
+
+A G4 automation selects this server with the `SapDriver` driver. Point `driverBinaries` at the running server and put
+the session selection in `sap:options`. The `SapDriver` plugin sets the `Sap` browser name itself. Studio sends the
+same `driverParameters` block when you run a bot from the workflow editor.
+
+```json
+{
+    "driverParameters": {
+        "driver": "SapDriver",
+        "driverBinaries": "http://localhost:5556/wd/hub",
+        "capabilities": {
+            "alwaysMatch": {
+                "sap:options": {
+                    "systemName": "DEV",
+                    "client": "100"
+                }
+            }
+        }
+    }
+}
+```
+
+1. Start `Sap.DriverServer.exe`, open SAP Logon and log on.
+2. Use `GET /sap/sessions` to find the `systemName`, `client` or `sessionPath` of the session you want.
+3. Set the same values in `sap:options`. Use `sessionPath`, or `connectionIndex` and `sessionIndex`, when several
+   sessions match.
+4. Run the bot. The driver attaches, drives the session and detaches when the automation ends.
+
+If `driverBinaries` is a folder instead of a URL, the plugin starts `Sap.DriverServer.exe` from that folder (local
+mode). See the [driver table](https://github.com/g4-api/g4-abstraction/blob/main/docs/drivers.md) and the
+[endpoint list](docs/endpoints.md).
+
 ## Session selection
 
 The `sap:options` capability selects exactly one open SAP GUI session. Every supplied criterion must match.
@@ -213,6 +248,23 @@ error kinds.
    are not available.
 6. Errors caused by SAP or COM carry `data.sapErrorKind` and no stack trace; COM error texts stay in the server log.
 7. `/scancodes` and the Grid 3 `register` command are not provided.
+
+## Compatibility
+
+The repository does not record which SAP GUI versions were tested. The list below states what the code requires.
+
+| Item | Requirement | Source |
+| --- | --- | --- |
+| Operating system | Windows. The server projects target `net10.0-windows`. | `src\Sap.DriverServer\Sap.DriverServer.csproj:5` |
+| Runtime | .NET 10. Self-contained builds from `scripts\publish.ps1` need no runtime. | `Prerequisites`, item 6 |
+| SAP product | SAP GUI for Windows with the SAP GUI Scripting component, attached through the `SAPGUI` entry of the running object table. | `src\Sap.DriverServer.Scripting\ComSapGuiEngine.cs:40` |
+| Bitness | Either. The driver reads the running object table directly, not through `SapROTWr`. | `ComSapGuiEngine.cs:21` |
+| User and desktop | Same Windows user, desktop session and integrity level as SAP Logon. | `Prerequisites`, item 7 |
+| Scripting switches | Enabled in the SAP GUI options and allowed on the application server (`sapgui/user_scripting`). | `Prerequisites`, items 2 to 5 |
+| Simulator | The x86 simulator replaces SAP Logon for tests only. | `src\Sap.DriverServer.Simulator\Sap.DriverServer.Simulator.csproj:17` |
+
+TODO(verify): the SAP GUI versions and SAP systems that were tested. The code has no version check, so any SAP GUI
+that exposes the scripting object model should attach.
 
 ## Configuration
 
@@ -311,8 +363,13 @@ you can try them, and test them end to end, on a machine without SAP GUI. It can
 ## Further reading
 
 1. [Capability mapping](docs/capabilities.md)
-2. [Troubleshooting](docs/troubleshooting.md)
-3. [SAP GUI Inspector](docs/inspector.md)
-4. [SAP GUI simulator](docs/simulator.md)
-5. [SAP GUI Scripting API documentation](https://help.sap.com/docs/sap_gui_for_windows)
-6. [W3C WebDriver specification](https://www.w3.org/TR/webdriver/)
+2. [Endpoints](docs/endpoints.md)
+3. [Troubleshooting](docs/troubleshooting.md)
+4. [SAP GUI Inspector](docs/inspector.md)
+5. [SAP GUI simulator](docs/simulator.md)
+6. [SAP GUI Scripting API documentation](https://help.sap.com/docs/sap_gui_for_windows)
+7. [W3C WebDriver specification](https://www.w3.org/TR/webdriver/)
+
+## Contributing and builds
+
+Build tools, test commands, version numbers, Docker images and development ports are in the [build, test and release guide](../g4-github-actions/docs/build-test-release.md).

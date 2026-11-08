@@ -246,7 +246,7 @@ name, and arguments.
 
 2. Open `http://localhost:5556/status`; `sap.available` is `true` with one connection.
 3. Create a session with `{"sap:options": {"systemName": "SIM"}}` and log on through the element endpoints, as in
-   [Connect from G4 or Selenium](../README.md#connect-from-g4-or-selenium).
+   Connect from G4 or Selenium.
 4. Start the inspector. It attaches to the simulator on its own; hover over a simulator control to frame it.
 5. In the inspector, use **Create session** with the same options to inspect through the driver and its screen canvas.
 
@@ -271,7 +271,7 @@ they report Inconclusive instead of attaching to it.
 
 A shell variable wins over `.env`, and `.env` wins over the `Environment` section of `appsettings.json`. For example,
 `$env:G4_SAP_SIMULATOR = "false"` skips the tests for one shell even when `.env` enables them. See
-[Environment settings](../README.md#environment-settings) for every key.
+Environment settings for every key.
 
 The tests cover status, logon, OK-code navigation, form interactions, output-only fields, the popup window,
 element-at on a button and a grid cell, page source and XPath, both disabled-scripting scenarios, ambiguous and

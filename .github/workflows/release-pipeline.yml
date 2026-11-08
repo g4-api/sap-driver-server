@@ -5,8 +5,10 @@ name: Build & Release Production
 permissions:
   contents: write
 
-# Trigger workflow on push to the main branch; documentation-only changes do not cut a release
+# Trigger workflow on push to the main branch, or manually using the workflow_dispatch event; documentation-only
+# changes do not cut a release on push
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
