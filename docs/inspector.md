@@ -14,7 +14,7 @@ machine.
    self-contained executable that finds SAP Logon in the Windows running object table, with either SAP GUI bitness.
 2. Local inspection needs SAP Logon, with SAP GUI Scripting enabled, on the same machine. Run the inspector as the
    same Windows user and at the same integrity level (elevated or not) as SAP Logon. See the
-   [README prerequisites](../README.md#prerequisites) for the SAP-side settings.
+   README prerequisites for the SAP-side settings.
 3. Driver sessions need a running SAP driver server that the inspector can reach over HTTP.
 
 ## Run
